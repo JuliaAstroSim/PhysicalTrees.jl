@@ -12,4 +12,6 @@ export
     # Base
     show
 
+    include("Peano.jl")
+    include("TreeNodes.jl")
 end

@@ -8,3 +8,5 @@ using PhysicalTrees
 @testset "Tree setup" begin
     @test 1 == 1
 end
+
+include("testPeano.jl")
