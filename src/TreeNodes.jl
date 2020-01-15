@@ -1,15 +1,36 @@
-mutable struct TopNode
-    Daughter::Int64
-    Pstart::Int64
-    Blocks::Int64
-    Leaf::Int64
+mutable struct OctreeNode{T<:Union{Number, Quantity}, I<:Integer} <: AbstractTreeNode2D
+    ID::I
+    Father::I
+    DaughterID::Array{I,1}
+    Center::AbstractPoint2D
+    SideLength::Quantity
+    Mass::Quantity
+    MassCenter::AbstractPoint2D
+    MaxSoft::Quantity
+    SparseDaughterID::Array{Int64,1} # Walk in sparse tree to improve performance
+    PDM_Mass::Quantity
+    PDM_MassCenter::AbstractPoint2D
+    IsLeaf::Bool
+    ParticleID::I # Refers to the particle or vector on this leaf.
+                  # One leaf can only take one particle. Set 0 if none or more than 1
+
+    NextNode::I
+    Sibling::I
+    BitFlag::I
+end
+
+mutable struct TopOctreeNode{I<:Integer}
+    Daughter::I
+    Pstart::I
+    Blocks::I
+    Leaf::I
     Size::Int128
     StartKey::Int128
     Count::Int128
 end
 TopNode(;NumLocal = 0, bits=21) = TopNode(-1, 1, 0, 0, Int128(1)<<Int128(3*bits), 0, NumLocal)
 
-mutable struct PhysicalTreeNode
+mutable struct PhysicalOctreeNode
     ID::Int64
     Father::Int64
     DaughterID::Array{Int64,1}
