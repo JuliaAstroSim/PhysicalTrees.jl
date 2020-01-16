@@ -1,1 +1,1 @@
-function extent()
+extent(data::Dict) = extent([extent(p) for p in values(data)])
