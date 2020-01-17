@@ -46,11 +46,11 @@ function octree_type(data::Dict)
 end
 
 """
-function split(data::Array, i::Int64, N::Int64)
+function split_data(data::Array, i::Int64, N::Int64)
 
     split data to N sections, return the ith section
 """
-function split(data::Array, i::Int64, N::Int64)
+function split_data(data::Array, i::Int64, N::Int64)
     if length(data) == 0
         return similar(data)
     end
@@ -58,33 +58,32 @@ function split(data::Array, i::Int64, N::Int64)
     len = length(data)
     if i <= len % N
         head = (i - 1) * (div(len, N) + 1) + 1
-        return view(data, head:head + div(len, N) + 1)
+        return data[head : head + div(len, N) + 1]
     end
 end
 
-function split(data::Dict, i::Int64, N::Int64)
+function split_data(data::Dict, i::Int64, N::Int64)
     d = Dict{Symbol,Array{T,1} where T}()
     for key in keys(data)
-        d[key] = split(data[key], i, N)
+        d[key] = split_data(data[key], i, N)
     end
     return d
-end
-
-function alloc_octree(octree::Octree)
-    
 end
 
 function init_octree(data::Union{Array,Dict}, config::OctreeConfig, worker::Array{Int64,1})
     e = extent(data)
 
     TreeType, NodeType = octree_type(data)
+    sendto(worker, TreeType=TreeType, NodeType=NodeType)
 
-    @everywhere worker octree = TreeType($NodeType, $e, $config, similar($data),
-                                        [TopNode() for i=1:$(config.ToptreeAllocSection)],
-                                        [NodeType() for i=1:$(config.TreeAllocSection)])
-
+    for i in 1:length(worker)
+        d = split_data(data, i, length(worker))
+        @everywhere worker[i] octree = TreeType(NodeType, $config, $e, $d,
+                                                [TopNode() for k=1:$(config.ToptreeAllocSection)],
+                                                [NodeType() for k=1:$(config.TreeAllocSection)])
+    end
 end
 
-function clear_octree()
-    
+function clear_octree(octree::PhysicalOctree)
+    octree.NTopLeavesLocal = 0
 end

@@ -12,6 +12,8 @@ mutable struct Octree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
 end
 
 mutable struct Octree{T<:Union{Array,Dict}} <: AbstractOctree3D{T}
+    NodeType::UnionAll
+
     config::OctreeConfig
 
     extent::AbstractExtent3D
@@ -23,6 +25,8 @@ mutable struct Octree{T<:Union{Array,Dict}} <: AbstractOctree3D{T}
 end
 
 mutable struct PhysicalOctree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
+    NodeType::UnionAll
+
     config::OctreeConfig
 
     extent::AbstractExtent2D
@@ -32,14 +36,20 @@ mutable struct PhysicalOctree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
     nodes::Array{AbstractOctreeNode2D}
 end
 
-mutable struct PhysicalOctree{T<:Union{Array,Dict}} <: AbstractOctree3D{T}
+mutable struct PhysicalOctree{T} <: AbstractOctree3D{T}
+    NodeType::UnionAll
+
     config::OctreeConfig
 
     extent::AbstractExtent3D
 
     data::T
-    topnodes::Array{TopNode}
-    nodes::Array{AbstractOctreeNode}
+
+    #NTopLeavesLocal::Int64
+    topnodes::Array
+
+    nodes::Array
+
 end
 
 function append!()

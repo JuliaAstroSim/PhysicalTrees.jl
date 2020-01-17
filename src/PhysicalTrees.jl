@@ -5,11 +5,14 @@ __precompile__(true)
 using Unitful, UnitfulAstro
 using Distributed, ParallelDataTransfer
 
-using PhysicalParticles
-#using SimulationProfiles
 
 import Base: +, -, show, real, iterate, length, similar
 import Unitful.Units
+
+using PhysicalParticles
+import PhysicalParticles: extent
+#using SimulationProfiles
+
 
 export
     # Base
@@ -19,13 +22,19 @@ export
     OctreeConfig,
 
     # Tree node
-    OctreeNode,
+    OctreeNode, OctreeNode2D,
+    PhysicalOctreeNode, PhysicalOctreeNode2D,
+    TopNode,
+    DomainNode,
+    ExtNode,
 
     # Tree
-    Octree,
+    Octree, Octree2D,
+    PhysicalOctree, PhysicalOctree2D,
 
     # Setup
-    setup
+    setup, 
+    init_octree, octree_type, split_data, clear_octree
 
     abstract type AbstractTree{T} end
     abstract type AbstractTree2D{T} <: AbstractTree{T} end

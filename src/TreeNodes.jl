@@ -16,6 +16,8 @@ mutable struct OctreeNode2D{T<:Number, I<:Integer} <: AbstractOctreeNode2D{T}
     Sibling::I
     BitFlag::I
 end
+OctreeNode2D() = OctreeNode2D(1, 0, [0,0,0,0], PVector2D(), 0.0, 0.0,
+                        PVector2D(), 0.0, Array{Int64,1}(), true, 0, 0, 0, 0)
 
 mutable struct OctreeNode{T<:Number, I<:Integer} <: AbstractOctreeNode3D{T}
     ID::I
@@ -35,6 +37,8 @@ mutable struct OctreeNode{T<:Number, I<:Integer} <: AbstractOctreeNode3D{T}
     Sibling::I
     BitFlag::I
 end
+OctreeNode() = OctreeNode(1, 0, [0,0,0,0,0,0,0,0], PVector(), 0.0, 0.0,
+                        PVector(), 0.0, Array{Int64,1}(), true, 0, 0, 0, 0)
 
 mutable struct TopNode{I<:Integer}
     Daughter::I
@@ -45,7 +49,7 @@ mutable struct TopNode{I<:Integer}
     StartKey::Int128
     Count::Int128
 end
-TopNode(;bits=21) = TopNode(-1, 1, 0, 0, Int128(1)<<Int128(3*bits), 0, 0)
+TopNode(;bits=21) = TopNode(-1, 1, 0, 0, Int128(1)<<Int128(3*bits), Int128(0), Int128(0))
 
 mutable struct PhysicalOctreeNode2D{I<:Integer} <: AbstractOctreeNode2D{I}
     ID::I
@@ -67,8 +71,8 @@ mutable struct PhysicalOctreeNode2D{I<:Integer} <: AbstractOctreeNode2D{I}
     Sibling::I
     BitFlag::I
 end
-PhysicalTreeNode2D() = PhysicalTreeNode2D(1, 0, [0,0,0,0,0,0,0,0], PVector(u"kpc"), 0.0u"kpc", 0.0u"Msun",
-                        PVector(u"kpc"), 0.0u"kpc", [], 0.0u"Msun", PVector(u"kpc"), true, 0, 0, 0, 0)
+PhysicalOctreeNode2D() = PhysicalOctreeNode2D(1, 0, [0,0,0,0,0,0,0,0], PVector(u"kpc"), 0.0u"kpc", 0.0u"Msun",
+                        PVector(u"kpc"), 0.0u"kpc", Array{Int64,1}(), 0.0u"Msun", PVector(u"kpc"), true, 0, 0, 0, 0)
 
 mutable struct PhysicalOctreeNode{I<:Integer} <: AbstractOctreeNode{I}
     ID::I
@@ -90,8 +94,8 @@ mutable struct PhysicalOctreeNode{I<:Integer} <: AbstractOctreeNode{I}
     Sibling::I
     BitFlag::I
 end
-PhysicalTreeNode() = PhysicalTreeNode(1, 0, [0,0,0,0,0,0,0,0], PVector(u"kpc"), 0.0u"kpc", 0.0u"Msun",
-                        PVector(u"kpc"), 0.0u"kpc", [], 0.0u"Msun", PVector(u"kpc"), true, 0, 0, 0, 0)
+PhysicalOctreeNode() = PhysicalOctreeNode(1, 0, [0,0,0,0,0,0,0,0], PVector(u"kpc"), 0.0u"kpc", 0.0u"Msun",
+                        PVector(u"kpc"), 0.0u"kpc", Array{Int64,1}(), 0.0u"Msun", PVector(u"kpc"), true, 0, 0, 0, 0)
 
 mutable struct DomainNode
     MassCenter::AbstractPoint
