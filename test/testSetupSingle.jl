@@ -10,3 +10,5 @@ data = [Star() for i = 1:9]
 
 @info "Building tree"
 setup(data)
+
+@show octree

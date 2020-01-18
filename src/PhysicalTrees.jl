@@ -18,6 +18,11 @@ export
     # Base
     +, -, show, real, iterate, length, similar,
 
+    # Traits
+    treetype,
+    Physical2D, Physical3D,
+    Unitless2D, Unitless3D,
+
     # Configs
     OctreeConfig,
 
@@ -34,8 +39,7 @@ export
 
     # Setup
     setup,
-    init_tree,
-    init_octree, octree_type, split_data, clear_octree
+    init_octree, split_data, clear_octree
 
     abstract type AbstractTree{T} end
     abstract type AbstractTree2D{T} <: AbstractTree{T} end

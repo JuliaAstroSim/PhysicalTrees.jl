@@ -36,17 +36,15 @@ mutable struct PhysicalOctree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
     nodes::Array{AbstractOctreeNode2D}
 end
 
-mutable struct PhysicalOctree{T} <: AbstractOctree3D{T}
-    NodeType::UnionAll
-
+mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
     config::OctreeConfig
     extent::AbstractExtent3D
 
     data::T
     worker::Array{Int64,1}
 
-    topnodes::Array
-    nodes::Array
+    topnodes::Array{TopNode{I},1}
+    nodes::Array{PhysicalOctreeNode{I},1}
 
     # Tree data
     DomainFac::Float64
@@ -73,10 +71,10 @@ mutable struct PhysicalOctree{T} <: AbstractOctree3D{T}
     DomainMyStart::Int64
     DomainMyEnd::Int64
 end
-PhysicalOctree(NodeType::UnionAll, config::OctreeConfig, extent::AbstractExtent3D, data, worker::Array{Int64,1}) = PhysicalOctree(
-    NodeType, config, extent, data, worker,
+PhysicalOctree(config::OctreeConfig, extent::AbstractExtent3D, data, worker::Array{Int64,1}) = PhysicalOctree(
+    config, extent, data, worker,
     [TopNode() for i=1:config.ToptreeAllocSection],
-    [NodeType() for i=1:config.TreeAllocSection],
+    [PhysicalOctreeNode() for i=1:config.TreeAllocSection],
 
     # Tree Data
     0.0,
@@ -104,8 +102,12 @@ PhysicalOctree(NodeType::UnionAll, config::OctreeConfig, extent::AbstractExtent3
     0,
 )
 
-function init_tree(TreeType::UnionAll, NodeType::UnionAll, config::OctreeConfig, extent::AbstractExtent3D, data, worker::Array{Int64,1})
-    return TreeType(NodeType, config, extent, data, worker)
+function init_octree(config::OctreeConfig, extent::AbstractExtent3D, data, worker::Array{Int64,1}, ::Physical3D)
+    return PhysicalOctree(config, extent, data, worker)
+end
+
+function init_octree(config::OctreeConfig, extent::AbstractExtent3D, data, worker::Array{Int64,1})
+    return init_octree(config, extent, data, worker, treetype(data))
 end
 
 function append!()
