@@ -33,7 +33,8 @@ export
     PhysicalOctree, PhysicalOctree2D,
 
     # Setup
-    setup, 
+    setup,
+    init_tree,
     init_octree, octree_type, split_data, clear_octree
 
     abstract type AbstractTree{T} end
@@ -56,6 +57,7 @@ export
 
     similar(d::Dict{T,S}) where T where S = Dict{T,S}()
 
+    include("Traits.jl")
     include("Config.jl")
     include("Peano.jl")
     include("TreeNodes.jl")

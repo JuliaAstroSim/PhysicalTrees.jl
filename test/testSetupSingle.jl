@@ -1,11 +1,12 @@
-include("PhysicalTrees.jl/src/PhysicalTrees.jl")
+@info "Initializing"
+include("../src/PhysicalTrees.jl")
 using .PhysicalTrees
-
-
-
-"""
 using Distributed
 
-@everywhere include("PhysicalTrees.jl/src/PhysicalTrees.jl")
-@everywhere using .PhysicalTrees
-"""
+using PhysicalParticles
+
+@info "Loading data"
+data = [Star() for i = 1:9]
+
+@info "Building tree"
+setup(data)

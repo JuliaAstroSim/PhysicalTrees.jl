@@ -1,3 +1,6 @@
+
+
+
 function octree_type(p::AbstractPoint)
     TreeType = nothing
     NodeType = nothing
@@ -74,16 +77,27 @@ function init_octree(data::Union{Array,Dict}, config::OctreeConfig, worker::Arra
     e = extent(data)
 
     TreeType, NodeType = octree_type(data)
-    sendto(worker, TreeType=TreeType, NodeType=NodeType)
 
     for i in 1:length(worker)
         d = split_data(data, i, length(worker))
-        @everywhere worker[i] octree = TreeType(NodeType, $config, $e, $d,
-                                                [TopNode() for k=1:$(config.ToptreeAllocSection)],
-                                                [NodeType() for k=1:$(config.TreeAllocSection)])
+        @everywhere worker[i] const octree = init_tree($TreeType, $NodeType, $config, $e, $d, $worker)
     end
 end
 
 function clear_octree(octree::PhysicalOctree)
+    octree.topnodes = [TopNode() for i=1:octree.MaxToptreeNodes]
+
+    octree.NTopLeaves = 0
     octree.NTopLeavesLocal = 0
+    octree.StartKeys = Array{Int128,1}()
+    octree.Counts = Array{Int128,1}()
+
+    octree.DomainStartList = zeros(Int64, nprocs())
+    octree.DomainEndList = zeros(Int64, nprocs())
+    octree.list_load = zeros(Int64, nprocs())
+    octree.list_work = zeros(Float64, nprocs())
+end
+
+function rebuild_octree()
+    
 end
