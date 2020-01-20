@@ -6,7 +6,7 @@ using Unitful, UnitfulAstro
 using Distributed, ParallelDataTransfer
 
 
-import Base: +, -, show, real, iterate, length, similar
+import Base: +, -, show, real, iterate, length
 import Unitful.Units
 
 using PhysicalParticles
@@ -16,7 +16,7 @@ import PhysicalParticles: extent
 
 export
     # Base
-    +, -, show, real, iterate, length, similar,
+    +, -, show, real, iterate, length,
 
     # Traits
     treetype,
@@ -59,9 +59,8 @@ export
 
     @inline real(p::T) where T <: AbstractOctreeNode = p
 
-    similar(d::Dict{T,S}) where T where S = Dict{T,S}()
-
     include("Traits.jl")
+    include("Parallel.jl")
     include("Config.jl")
     include("Peano.jl")
     include("TreeNodes.jl")

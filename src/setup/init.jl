@@ -9,7 +9,7 @@ function split_data(data::Array, i::Int64, N::Int64)
     end
 
     if length(data) == 0
-        return similar(data)
+        return empty(data)
     end
 
     len = length(data)
@@ -36,26 +36,27 @@ function split_data(data::Dict, i::Int64, N::Int64)
     return d
 end
 
-function init_octree(data::Union{Array,Dict}, config::OctreeConfig, worker::Array{Int64,1})
+function init_octree(data::Union{Array,Dict}, config::OctreeConfig, pids::Array{Int64,1})
+    id = next_treeid()
     e = extent(data)
-    for i in 1:length(worker)
-        d = split_data(data, i, length(worker))
-        @everywhere worker[i] const octree = init_octree($config, $e, $d, $worker)
+    type = treetype(data) # to avoid empty arrays
+    @sync for i in 1:length(pids)
+        @async begin
+            d = split_data(data, i, length(pids))
+            @everywhere pids[i] init_octree($id, false, $config, $e, $d, $pids, $type)
+        end
     end
+
+    if id.first == myid()
+        registry[id].isholder = true
+    else
+        init_octree(id, true, config, e, empty(data), pids, type)
+    end
+
+    return registry[id]
 end
 
 function clear_octree(octree::PhysicalOctree)
-    octree.topnodes = [TopNode() for i=1:octree.MaxToptreeNodes]
-
-    octree.NTopLeaves = 0
-    octree.NTopLeavesLocal = 0
-    octree.StartKeys = Array{Int128,1}()
-    octree.Counts = Array{Int128,1}()
-
-    octree.DomainStartList = zeros(Int64, nprocs())
-    octree.DomainEndList = zeros(Int64, nprocs())
-    octree.list_load = zeros(Int64, nprocs())
-    octree.list_work = zeros(Float64, nprocs())
 end
 
 function rebuild_octree()
