@@ -10,4 +10,4 @@ addprocs(2)
 data = [Star() for i = 1:9]
 
 @info "Building tree"
-setup(data)
+tree = setup(data)

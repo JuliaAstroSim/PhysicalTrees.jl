@@ -40,14 +40,14 @@ function init_octree(data::Union{Array,Dict}, config::OctreeConfig, pids::Array{
     id = next_treeid()
     e = extent(data)
     type = treetype(data) # to avoid empty arrays
-    @sync for i in 1:length(pids)
-        @async begin
+    @sync @distributed for i in 1:length(pids)
+        begin
             d = split_data(data, i, length(pids))
             @everywhere pids[i] init_octree($id, false, $config, $e, $d, $pids, $type)
         end
     end
 
-    if id.first == myid()
+    if haskey(registry, id)
         registry[id].isholder = true
     else
         init_octree(id, true, config, e, empty(data), pids, type)
