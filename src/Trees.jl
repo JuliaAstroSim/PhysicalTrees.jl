@@ -81,7 +81,7 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
     [PhysicalOctreeNode() for i=1:config.TreeAllocSection],
 
     # Tree Data
-    0.0,
+    ustrip(Float64, u"kpc^-1", 1.0 / extent.SideLength) * (Int128(1) << 21),
     Array{Int128,1}(),
     [[] []],
 

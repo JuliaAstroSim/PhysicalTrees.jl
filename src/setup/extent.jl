@@ -1,6 +1,13 @@
 extent(data::Dict) = extent([extent(p) for p in values(data)])
 
-function global_extent(pids::Array{Int64,1})
-    @everywhere pids octree.extent = extent(octree.data)
-    
+function extent(tree::AbstractTree)
+    if length(tree.pids) == 1
+        return extent(tree.data)
+    else
+        if tree.isholder
+            return reduce(extent, gather(extent, tree, :data))
+        else
+            return extent(tree.data)
+        end
+    end
 end

@@ -21,7 +21,7 @@ export
     +, -, show, real, iterate, length, summary, map!, reduce,
 
     # Parallel
-    procs,
+    procs, gather,
 
     # Traits
     treetype,
@@ -52,11 +52,9 @@ export
 
     @inline real(p::T) where T <: AbstractTree = p
 
-    abstract type AbstractOctree{T} end
-    abstract type AbstractOctree2D{T} <: AbstractOctree{T} end
-    abstract type AbstractOctree3D{T} <: AbstractOctree{T} end
+    abstract type AbstractOctree2D{T} <: AbstractTree2D{T} end
+    abstract type AbstractOctree3D{T} <: AbstractTree3D{T} end
 
-    @inline real(p::T) where T <: AbstractOctree = p
 
     abstract type AbstractOctreeNode{T} end
     abstract type AbstractOctreeNode2D{T} <: AbstractOctreeNode{T} end

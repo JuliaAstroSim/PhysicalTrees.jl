@@ -11,3 +11,5 @@ data = [Star() for i = 1:9]
 
 @info "Building tree"
 tree = setup(data)
+
+e = reduce(extent, gather(extent, tree, :data))
