@@ -112,3 +112,7 @@ end
 
 function append!()
 end
+
+function close()
+    
+end

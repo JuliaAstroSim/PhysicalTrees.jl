@@ -41,10 +41,8 @@ function init_octree(data::Union{Array,Dict}, config::OctreeConfig, pids::Array{
     e = extent(data)
     type = treetype(data) # to avoid empty arrays
     @sync @distributed for i in 1:length(pids)
-        begin
-            d = split_data(data, i, length(pids))
-            @everywhere pids[i] init_octree($id, false, $config, $e, $d, $pids, $type)
-        end
+        d = split_data(data, i, length(pids))
+        @everywhere pids[i] init_octree($id, false, $config, $e, $d, $pids, $type)
     end
 
     if haskey(registry, id)

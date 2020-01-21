@@ -4,10 +4,12 @@ __precompile__(true)
 
 using Unitful, UnitfulAstro
 using Distributed, ParallelDataTransfer
+using DataStructures
 
 
-import Base: +, -, show, real, iterate, length
+import Base: +, -, show, real, iterate, length, summary, map!, reduce
 import Unitful.Units
+import Distributed: procs
 
 using PhysicalParticles
 import PhysicalParticles: extent
@@ -16,7 +18,10 @@ import PhysicalParticles: extent
 
 export
     # Base
-    +, -, show, real, iterate, length,
+    +, -, show, real, iterate, length, summary, map!, reduce,
+
+    # Parallel
+    procs,
 
     # Traits
     treetype,
@@ -67,8 +72,12 @@ export
     include("Trees.jl")
     include("Iterators.jl")
 
+    include("PrettyPrinting.jl")
+
     include("setup/extent.jl")
     include("setup/topnodes.jl")
     include("setup/init.jl")
     include("setup/OctreeSetup.jl")
+
+    include("Analyse.jl")
 end

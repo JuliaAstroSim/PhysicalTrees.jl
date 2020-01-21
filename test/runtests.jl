@@ -1,12 +1,10 @@
 using Test
 using Unitful, UnitfulAstro
+using Distributed
 
 using PhysicalParticles
 
 using PhysicalTrees
 
-@testset "Tree setup" begin
-    @test 1 == 1
-end
-
+include("testParallel.jl")
 include("testPeano.jl")
