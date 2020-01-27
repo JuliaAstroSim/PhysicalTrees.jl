@@ -5,7 +5,7 @@ function extent(tree::AbstractTree)
         return extent(tree.data)
     else
         if tree.isholder
-            return reduce(extent, gather(extent, tree, :data))
+            return reduce(extent, gather(tree, extent, :data))
         else
             return extent(tree.data)
         end

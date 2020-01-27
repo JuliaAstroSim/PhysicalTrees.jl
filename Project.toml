@@ -1,6 +1,7 @@
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+ParallelOperations = "09c1cff2-b94d-4c31-85a1-721512e21c63"
 PhysicalParticles = "78724250-4eb2-11e9-0f34-13a7aab864c5"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"

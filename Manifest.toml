@@ -79,6 +79,14 @@ git-tree-sha1 = "c4c13474d23c60d20a67b217f1d7f22a40edf8f1"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.1.0"
 
+[[ParallelOperations]]
+deps = ["Distributed", "Test"]
+git-tree-sha1 = "c6a0eaa06612497121c819081d117bf18cbeaef6"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaAstroSim/ParallelOperations.jl"
+uuid = "09c1cff2-b94d-4c31-85a1-721512e21c63"
+version = "0.1.0"
+
 [[PhysicalConstants]]
 deps = ["Measurements", "Roots", "Unitful"]
 git-tree-sha1 = "f15e25a6fa064e0805ef7819d91d79e0ff0bedf4"

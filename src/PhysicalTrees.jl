@@ -3,25 +3,29 @@ module PhysicalTrees
 __precompile__(true)
 
 using Unitful, UnitfulAstro
-using Distributed, ParallelDataTransfer
+using Distributed
 using DataStructures
 
 
-import Base: +, -, show, real, iterate, length, summary, map!, reduce
+import Base: +, -, show, real, iterate, length, summary
 import Unitful.Units
 import Distributed: procs
 
 using PhysicalParticles
 import PhysicalParticles: extent
+
+using ParallelOperations
+import ParallelOperations: bcast, scatter, reduce, gather, allgather, allreduce
+
 #using SimulationProfiles
 
 
 export
     # Base
-    +, -, show, real, iterate, length, summary, map!, reduce,
+    +, -, show, real, iterate, length, summary,
 
     # Parallel
-    procs, gather,
+    procs, bcast, scatter, reduce, gather, allgather, allreduce,
 
     # Traits
     treetype,
@@ -70,7 +74,7 @@ export
     include("Trees.jl")
     include("Iterators.jl")
 
-    include("PrettyPrinting.jl")
+    #include("PrettyPrinting.jl")
 
     include("setup/extent.jl")
     include("setup/topnodes.jl")
