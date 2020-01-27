@@ -46,9 +46,13 @@ export
     Octree, Octree2D,
     PhysicalOctree, PhysicalOctree2D,
 
+    # Peano
+    peanokey,
+
     # Setup
-    setup,
-    init_octree, split_data, clear_octree
+    octree,
+    init_octree, split_data,
+    unregister_octree
 
     abstract type AbstractTree{T} end
     abstract type AbstractTree2D{T} <: AbstractTree{T} end
@@ -79,6 +83,9 @@ export
     include("setup/extent.jl")
     include("setup/topnodes.jl")
     include("setup/init.jl")
+    include("setup/domain.jl")
+    include("setup/build.jl")
+    include("setup/update.jl")
     include("setup/OctreeSetup.jl")
 
     include("Analyse.jl")

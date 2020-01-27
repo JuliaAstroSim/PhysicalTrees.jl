@@ -10,6 +10,4 @@ addprocs(2)
 data = [Star() for i = 1:9]
 
 @info "Building tree"
-tree = setup(data)
-
-e = gather(tree, extent, :data)
+tree = octree(data)

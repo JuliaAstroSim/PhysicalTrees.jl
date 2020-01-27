@@ -18,6 +18,7 @@ procs(tree::AbstractTree) = tree.pids
 
 bcast(tree::AbstractTree, expr, data, mod::Module = PhysicalTrees) = bcast(tree.pids, :(registry[$(tree.id)].$expr), data, mod)
 bcast(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = bcast(tree.pids, f, :(registry[$(tree.id)].$expr), mod)
+bcast(tree::AbstractTree, f::Function, mod::Module = PhysicalTrees) = bcast(tree.pids, f, :(registry[$(tree.id)]), mod)
 
 scatter(tree::AbstractTree, data::Array, expr, mod::Module = PhysicalTrees) = scatter(tree.pids, data, :(registry[$(tree.id)].$expr), mod)
 

@@ -40,7 +40,8 @@ sense_table = [-1, -1, -1, +1, +1, -1, -1, -1]
 
 function peanokey(x::Int64, y::Int64; bits::Int64=peano_2D_bits)
     n = 1 << bits
-    s = n >> 1; d = Int128(0)
+    s = n >> 1
+    d = Int128(0)
     while true
         rx = (x & s) > 0
         ry = (y & s) > 0
@@ -93,24 +94,57 @@ function peanokey(x::Int64, y::Int64, z::Int64; bits::Int64=peano_3D_bits)
     return key
 end
 
-function peanokey(p::PVector2D{T}, DomainFac::Float64, u::Units = u"kpc", bits::Int64=peano_3D_bits) where T<:Quantity
-    peanokey(trunc(Int64, ustrip(Float64, u, p.x) * DomainFac),
-             trunc(Int64, ustrip(Float64, u, p.y) * DomainFac), bits = bits)
+# Do not remove u::Units, let the compiler do dispatch work
+function peanokey(p::PVector2D{T}, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) where T<:Number
+    peanokey(trunc(Int64, (p.x - Corner.x) * DomainFac),
+             trunc(Int64, (p.y - Corner.y) * DomainFac), bits = bits)
 end
 
-function peanokey(p::PVector{T}, DomainFac::Float64, u::Units = u"kpc", bits::Int64=peano_3D_bits) where T<:Quantity
-    peanokey(trunc(Int64, ustrip(Float64, u, p.x) * DomainFac),
-             trunc(Int64, ustrip(Float64, u, p.y) * DomainFac),
-             trunc(Int64, ustrip(Float64, u, p.z) * DomainFac), bits = bits)
+function peanokey(p::PVector2D{T}, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) where T<:Quantity
+    peanokey(trunc(Int64, ustrip(Float64, u, p.x - Corner.x) * DomainFac),
+             trunc(Int64, ustrip(Float64, u, p.y - Corner.y) * DomainFac), bits = bits)
+end
+
+peanokey(p::AbstractParticle2D, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) = peanokey(p.Pos - Corner, DomainFac, u, bits)
+
+function peanokey(p::PVector{T}, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) where T<:Number
+    peanokey(trunc(Int64, (p.x - Corner.x) * DomainFac),
+             trunc(Int64, (p.y - Corner.y) * DomainFac),
+             trunc(Int64, (p.z - Corner.z) * DomainFac), bits = bits)
+end
+
+function peanokey(p::PVector{T}, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) where T<:Quantity
+    peanokey(trunc(Int64, ustrip(Float64, u, p.x - Corner.x) * DomainFac),
+             trunc(Int64, ustrip(Float64, u, p.y - Corner.y) * DomainFac),
+             trunc(Int64, ustrip(Float64, u, p.z - Corner.z) * DomainFac), bits = bits)
+end
+
+peanokey(p::AbstractParticle3D, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) = peanokey(p.Pos - Corner, DomainFac, u, bits)
+
+peanokey(data::Array, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
+peanokey(data::Array, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
+
+function peanokey(data::Dict, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64)
+    d = Dict{Any, Array{Int128,1}}()
+    for v in keys(data)
+        d[v] = peanokey(v, Corner, DomainFac, u, bits)
+    end
+end
+
+function peanokey(data::Dict, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64)
+    d = Dict{Any, Array{Int128,1}}()
+    for v in keys(data)
+        d[v] = peanokey(v, Corner, DomainFac, u, bits)
+    end
 end
 
 # implementing scale-free Hilbert ordering. Real all about it here:
 # http://doc.cgal.org/latest/Spatial_sorting/index.html
 
 abstract type AbstractCoordinate end
-mutable struct CoordinateX <: AbstractCoordinate end
-mutable struct CoordinateY <: AbstractCoordinate end
-mutable struct CoordinateZ <: AbstractCoordinate end
+struct CoordinateX <: AbstractCoordinate end
+struct CoordinateY <: AbstractCoordinate end
+struct CoordinateZ <: AbstractCoordinate end
 const coordinatex = CoordinateX()
 const coordinatey = CoordinateY()
 const coordinatez = CoordinateZ()
@@ -124,19 +158,19 @@ nextnext3d(::CoordinateY) = coordinatex
 nextnext3d(::CoordinateZ) = coordinatey
 
 abstract type AbstractDirection end
-mutable struct Forward <: AbstractDirection end
-mutable struct Backward <: AbstractDirection end
+struct Forward <: AbstractDirection end
+struct Backward <: AbstractDirection end
 const forward = Forward()
 const backward = Backward()
 Base.:!(::Forward) = backward
 Base.:!(::Backward) = forward
 
-compare(::Forward, ::CoordinateX, p1::AbstractPoint, p2::AbstractPoint) = getx(p1) < getx(p2)
-compare(::Backward, ::CoordinateX, p1::AbstractPoint, p2::AbstractPoint) = getx(p1) > getx(p2)
-compare(::Forward, ::CoordinateY, p1::AbstractPoint, p2::AbstractPoint) = gety(p1) < gety(p2)
-compare(::Backward, ::CoordinateY, p1::AbstractPoint, p2::AbstractPoint) = gety(p1) > gety(p2)
-compare(::Forward, ::CoordinateZ, p1::AbstractPoint, p2::AbstractPoint) = getz(p1) < getz(p2)
-compare(::Backward, ::CoordinateZ, p1::AbstractPoint, p2::AbstractPoint) = getz(p1) > getz(p2)
+compare(::Forward, ::CoordinateX, p1::AbstractPoint, p2::AbstractPoint) = p1.x < p2.x
+compare(::Backward, ::CoordinateX, p1::AbstractPoint, p2::AbstractPoint) = p1.x > p2.x
+compare(::Forward, ::CoordinateY, p1::AbstractPoint, p2::AbstractPoint) = p1.y < p2.y
+compare(::Backward, ::CoordinateY, p1::AbstractPoint, p2::AbstractPoint) = p1.y > p2.y
+compare(::Forward, ::CoordinateZ, p1::AbstractPoint, p2::AbstractPoint) = p1.z < p2.z
+compare(::Backward, ::CoordinateZ, p1::AbstractPoint, p2::AbstractPoint) = p1.z > p2.z
 
 function select!(direction::AbstractDirection, coordinate::AbstractCoordinate, v::Array{T,1}, k::Int, lo::Int, hi::Int) where T<:AbstractPoint
     lo <= k <= hi || error("select index $k is out of range $lo:$hi")
@@ -241,3 +275,7 @@ mssort!(a::Array{T,1}; lim_ms::Int64=16, lim_hl::Int64=4, rat::Float64=0.25) whe
     _mssort!(a, lim_ms, lim_hl, rat)
 mssort!(a::Array{T,1}; lim_ms::Int64=64, lim_hl::Int64=8, rat::Float64=0.125) where {T<:AbstractPoint3D} =
     _mssort!(a, lim_ms, lim_hl, rat)
+
+function sortpeano(tree::AbstractTree)
+    
+end

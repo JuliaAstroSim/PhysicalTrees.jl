@@ -11,3 +11,13 @@ function extent(tree::AbstractTree)
         end
     end
 end
+
+datalength(data::Array) = length(data)
+
+function datalength(data::Dict)
+    n = 0
+    for v in values(data)
+        n += length(v)
+    end
+    return n
+end

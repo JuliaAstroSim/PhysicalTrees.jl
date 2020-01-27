@@ -9,7 +9,7 @@ using PhysicalParticles
 data = [Star() for i = 1:9]
 
 @info "Building tree"
-tree = setup(data)
+tree = octree(data)
 
 """
 @show PhysicalTrees.registry[Pair(1,1)]

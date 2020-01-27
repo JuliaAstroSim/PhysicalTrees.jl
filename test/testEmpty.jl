@@ -1,0 +1,1 @@
+# Ensure it still workers with empty data

@@ -45,6 +45,7 @@ mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
 
     data::T
     pids::Array{Int64,1}
+    NumTotal::Int64
 
     topnodes::Array{TopNode{I},1}
     nodes::Array{PhysicalOctreeNode{I},1}
@@ -52,7 +53,6 @@ mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
     # Tree data
     DomainFac::Float64
     peano_keys::Array{Int128,1}
-    key_points::Array{Any,2}
     
     NTopNodes::Int64
     NumLocal::Int64
@@ -74,16 +74,15 @@ mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
     DomainMyStart::Int64
     DomainMyEnd::Int64
 end
-PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, pids::Array{Int64,1}) = PhysicalOctree(
+PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) = PhysicalOctree(
     id, isholder,
-    config, extent, data, pids,
-    [TopNode() for i=1:config.ToptreeAllocSection],
+    config, extent, data, pids, NumTotal,
+    Array{TopNode{Int64},1}(),
     [PhysicalOctreeNode() for i=1:config.TreeAllocSection],
 
     # Tree Data
-    ustrip(Float64, u"kpc^-1", 1.0 / extent.SideLength) * (Int128(1) << 21),
+    0.0,
     Array{Int128,1}(),
-    [[] []],
 
     1,
     0,
@@ -97,17 +96,17 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
     Array{Float64,1}(),
     Array{Int64,1}(),
     Array{Int64,1}(),
-    zeros(Int64, nprocs()),
-    zeros(Int64, nprocs()),
-    zeros(Int64, nprocs()),
-    zeros(Float64, nprocs()),
+    zeros(Int64, length(pids)),
+    zeros(Int64, length(pids)),
+    zeros(Int64, length(pids)),
+    zeros(Float64, length(pids)),
 
     0,
     0,
 )
 
-function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, pids::Array{Int64,1}, ::Physical3D)
-    registry[id] = PhysicalOctree(id, isholder, config, extent, data, pids)
+function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)
+    registry[id] = PhysicalOctree(id, isholder, config, extent, data, NumTotal, pids)
 end
 
 function append!()
