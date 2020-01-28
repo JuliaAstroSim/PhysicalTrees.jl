@@ -7,3 +7,4 @@
 - [ ] Multi-threads
 - [ ] Performance optimization
   - [ ] @inbounds, @propagate_inbounds
+- [ ] general sum_cost

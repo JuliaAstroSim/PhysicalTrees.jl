@@ -13,7 +13,7 @@ function init_topnode(tree::PhysicalOctree)
     tree.topnodes[1].Count = tree.NumLocal
 end
 
-function split_local_topnode_kernel(tree::PhysicalOctree, node::Int64, startkey::Int128)
+function split_topnode_local_kernel(tree::PhysicalOctree, node::Int64, startkey::Int128)
     topnodes = tree.topnodes
     if topnodes[node].Size >= 8
         topnodes[node].Daughter = tree.NTopnodes + 1
@@ -52,7 +52,7 @@ function split_local_topnode_kernel(tree::PhysicalOctree, node::Int64, startkey:
         for i in 0:7
             sub = topnodes[node].Daughter + i
             if topnodes[sub].Count > tree.NumTotal / (tree.config.TopnodeFactor * length(tree.pids)^2)
-                split_local_topnode_kernel(tree, sub, topnodes[sub].StartKey)
+                split_topnode_local_kernel(tree, sub, topnodes[sub].StartKey)
             end
         end
     end # if topnodes[node].size >
@@ -71,8 +71,8 @@ function count_leaves(tree::PhysicalOctree)
     end
 end
 
-function split_local_topnode(tree::PhysicalOctree)
-    split_local_topnode_kernel(tree, 1, Int128(0))
+function split_topnode_local(tree::PhysicalOctree)
+    split_topnode_local_kernel(tree, 1, Int128(0))
 
     count_leaves(tree)
 end
@@ -167,14 +167,27 @@ function split_topnode(tree::PhysicalOctree)
 end
 
 function sum_cost(tree::PhysicalOctree)
-    
+    topnodes = tree.topnodes
+    data = tree.data
+    tree.DomainWork = zeros(Float64, tree.NTopLeaves)
+    tree.DomainCount = zeros(Int64, tree.NTopLeaves)
+    for i in 1:tree.NumLocal
+        no = 1
+        while topnodes[no].Daughter >= 0
+            no = trunc(Int64, topnodes[no].Daughter + (tree.peano_keys[i] - topnodes[no].StartKey) / (topnodes[no].Size / 8))
+        end
+        no = topnodes[no].Leaf
+
+        tree.DomainWork[no] += 1.0
+        tree.DomainCount[no] += 1
+    end
 end
 
 function split_domain(tree::PhysicalOctree)
     bcast(tree, init_peano)
     bcast(tree, init_topnode)
 
-    bcast(tree, split_local_topnode)
+    bcast(tree, split_topnode_local)
 
     allsum(tree, :NTopnodes)
     allsum(tree, :NTopLeaves)
@@ -187,8 +200,14 @@ function split_domain(tree::PhysicalOctree)
 
     bcast(tree, split_topnode)
 
-    tree.DomainFac = getfrom(tree, first(tree.pids), :DomainFac)
-    tree.NTopLeaves = getfrom(tree, first(tree.pids), :NTopLeaves)
+    tree.DomainFac = first(gather(tree, :DomainFac))
+    tree.NTopnodes = first(gather(tree, :NTopnodes))
+    tree.NTopLeaves = first(gather(tree, :NTopLeaves))
 
     bcast(tree, sum_cost)
+
+    tree.DomainWork = sum(gather(tree, :DomainWork))
+    tree.DomainCount = sum(gather(tree, :DomainCount))
+    bcast(tree, :DomainWork, tree.DomainWork)
+    bcast(tree, :DomainCount, tree.DomainWork)
 end
