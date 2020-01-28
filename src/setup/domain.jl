@@ -85,6 +85,15 @@ function split_local_topnode(tree::PhysicalOctree)
     count_leaves(tree)
 end
 
+function key_sort_bcast(tree::PhysicalOctree)
+    key_counts = sortslices([tree.StartKeys tree.Counts], dims=1)
+    tree.StartKeys = key_counts[:, 1]
+    tree.Counts = key_counts[:, 2]
+
+    bcast(tree, :StartKeys, tree.StartKeys)
+    bcast(tree, :Counts, tree.Counts)
+end
+
 function split_topnode_kernel(tree::PhysicalOctree)
     
 end
@@ -98,7 +107,15 @@ function split_domain(tree::PhysicalOctree)
     bcast(tree, init_topnode)
 
     bcast(tree, split_local_topnode)
+
+    allsum(tree, :NTopnodes)
     allsum(tree, :NTopLeaves)
+
+    tree.StartKeys = reduce(vcat, gather(tree, :StartKeys))
+    tree.Counts = reduce(vcat, gather(tree, :Counts))
+    key_sort_bcast(tree)
+
+    bcast(tree, reinit_topnode)
 
     bcast(tree, split_topnode)
 end
