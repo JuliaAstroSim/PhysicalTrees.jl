@@ -1,5 +1,6 @@
 @info "Initializing"
 using Distributed
+using Unitful, UnitfulAstro
 addprocs(2)
 
 @everywhere using PhysicalParticles
@@ -7,7 +8,15 @@ addprocs(2)
 @everywhere using .PhysicalTrees
 
 @info "Loading data"
-data = [Star() for i = 1:9]
+data = [PVector(1.0, 1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, -1.0, u"kpc"),
+        PVector(1.0, 0.0, -1.0, u"kpc"), PVector(-1.0, 0.0, 1.0, u"kpc"),
+        PVector(0.0, 0.0, -1.0, u"kpc"), PVector(-1.0, 0.0, 0.0, u"kpc")]
 
 @info "Building tree"
 tree = octree(data)
+
+#=
+@everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].data
+@everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].topnodes
+
+=#

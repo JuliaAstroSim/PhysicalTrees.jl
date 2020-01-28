@@ -50,6 +50,7 @@ mutable struct TopNode{I<:Integer}
     Count::Int128
 end
 TopNode(;bits=21) = TopNode(-1, 1, 0, 0, Int128(1)<<(3*bits), Int128(0), Int128(0))
+@inline length(p::T) where T <: TopNode = 1
 
 mutable struct PhysicalOctreeNode2D{I<:Integer} <: AbstractOctreeNode2D{I}
     ID::I

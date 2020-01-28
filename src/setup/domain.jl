@@ -24,6 +24,6 @@ function domain_topnode_split()
 end
 
 function split_domain(tree::PhysicalOctree)
-    init_peano_topnodes(tree)
-    init_topnodes(tree)
+    bcast(tree, init_peano_topnodes)
+    bcast(tree, init_topnodes)
 end

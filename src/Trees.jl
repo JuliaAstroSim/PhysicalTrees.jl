@@ -78,7 +78,7 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
     id, isholder,
     config, extent, data, pids, NumTotal,
     Array{TopNode{Int64},1}(),
-    [PhysicalOctreeNode() for i=1:config.TreeAllocSection],
+    Array{PhysicalOctreeNode{Int64},1}(),
 
     # Tree Data
     0.0,

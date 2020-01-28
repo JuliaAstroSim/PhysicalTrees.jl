@@ -59,6 +59,7 @@ export
     abstract type AbstractTree3D{T} <: AbstractTree{T} end
 
     @inline real(p::T) where T <: AbstractTree = p
+    @inline length(p::T) where T <: AbstractTree = 1
 
     abstract type AbstractOctree2D{T} <: AbstractTree2D{T} end
     abstract type AbstractOctree3D{T} <: AbstractTree3D{T} end
@@ -69,6 +70,7 @@ export
     abstract type AbstractOctreeNode3D{T} <: AbstractOctreeNode{T} end
 
     @inline real(p::T) where T <: AbstractOctreeNode = p
+    @inline length(p::T) where T <: AbstractOctreeNode = 1
 
     include("Traits.jl")
     include("Parallel.jl")

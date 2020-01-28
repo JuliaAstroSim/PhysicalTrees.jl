@@ -105,7 +105,7 @@ function peanokey(p::PVector2D{T}, Corner::PVector2D, DomainFac::Float64, u::Uni
              trunc(Int64, ustrip(Float64, u, p.y - Corner.y) * DomainFac), bits = bits)
 end
 
-peanokey(p::AbstractParticle2D, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) = peanokey(p.Pos - Corner, DomainFac, u, bits)
+peanokey(p::AbstractParticle2D, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) = peanokey(p.Pos, Corner, DomainFac, u, bits)
 
 function peanokey(p::PVector{T}, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) where T<:Number
     peanokey(trunc(Int64, (p.x - Corner.x) * DomainFac),
@@ -119,7 +119,7 @@ function peanokey(p::PVector{T}, Corner::PVector, DomainFac::Float64, u::Units, 
              trunc(Int64, ustrip(Float64, u, p.z - Corner.z) * DomainFac), bits = bits)
 end
 
-peanokey(p::AbstractParticle3D, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) = peanokey(p.Pos - Corner, DomainFac, u, bits)
+peanokey(p::AbstractParticle3D, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) = peanokey(p.Pos, Corner, DomainFac, u, bits)
 
 peanokey(data::Array, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
 peanokey(data::Array, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
