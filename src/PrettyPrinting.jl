@@ -6,6 +6,10 @@ function summary(tree::AbstractTree)
              "\n        Number of topnodes: ", tree.NTopnodes,
              "\n       Number of topleaves: ", tree.NTopLeaves,
              "\n             Domain factor: ", tree.DomainFac,
+             "\n         Domain start list: ", tree.DomainStartList,
+             "\n           Domain end list: ", tree.DomainEndList,
+             "\n                 Load list: ", tree.list_load,
+             "\n                 Work list: ", tree.list_work,
              "\n    ", tree.extent,
              "\n", datainfo(tree),
     )

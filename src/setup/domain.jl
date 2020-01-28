@@ -183,6 +183,109 @@ function sum_cost(tree::PhysicalOctree)
     end
 end
 
+function find_split_kernel(tree::PhysicalOctree, cpustart::Int64, ncpu::Int64, First::Int64, Last::Int64)
+    ncpu_leftOfSplit = trunc(Int64, ncpu / 2)
+    load = 0
+
+    for i in First:Last
+        load += tree.DomainCount[i]
+    end
+
+    split = First + ncpu_leftOfSplit
+    load_leftOfSplit = 0
+
+    for i in First:split-1
+        load_leftOfSplit += tree.DomainCount[i]
+    end
+
+    # find the best split point in terms of work-load balance
+    while split < Last - (ncpu - ncpu_leftOfSplit - 1) && split > 1
+        maxAvgLoad_CurrentSplit = max(load_leftOfSplit / ncpu_leftOfSplit, (load - load_leftOfSplit) / (ncpu - ncpu_leftOfSplit))
+        maxAvgLoad_NewSplit = max((load_leftOfSplit + tree.DomainCount[split]) / ncpu_leftOfSplit,
+                                  (load - load_leftOfSplit - tree.DomainCount[split]) / (ncpu - ncpu_leftOfSplit))
+        if maxAvgLoad_NewSplit <= maxAvgLoad_CurrentSplit
+            load_leftOfSplit += tree.DomainCount[split]
+            split += 1
+        else
+            break
+        end
+    end
+
+    load_leftOfSplit = 0
+    for i in First:split-1
+        load_leftOfSplit += tree.DomainCount[i]
+    end
+
+    # check whether this solution is possible given the restrictions on the maximum load
+
+    #if load_leftOfSplit > maxload * ncpu_leftOfSplit || (load - load_leftOfSplit) > maxload * (ncpu - ncpu_leftOfSplit)
+    #    return false
+    #end
+
+    if ncpu_leftOfSplit >= 2
+        ok_left = find_split_kernel(tree, cpustart, ncpu_leftOfSplit, First, split-1)
+    else
+        ok_left = true
+    end
+
+    if ncpu - ncpu_leftOfSplit >= 2
+        ok_right = find_split_kernel(tree, cpustart + ncpu_leftOfSplit, ncpu - ncpu_leftOfSplit, split, Last)
+    else
+        ok_right = true
+    end
+
+    if ok_left && ok_right
+        # found a viable split
+        if ncpu_leftOfSplit == 1
+            for i in First:split-1
+                tree.DomainTask[i] = cpustart
+            end
+
+            tree.list_load[cpustart] = load_leftOfSplit;
+	        tree.DomainStartList[cpustart] = First;
+	        tree.DomainEndList[cpustart] = split-1;
+        end
+
+        if ncpu - ncpu_leftOfSplit == 1
+            for i in split:Last
+                tree.DomainTask[i] = cpustart + ncpu_leftOfSplit
+            end
+
+            tree.list_load[cpustart + ncpu_leftOfSplit] = load - load_leftOfSplit;
+            tree.DomainStartList[cpustart + ncpu_leftOfSplit] = split;
+            tree.DomainEndList[cpustart + ncpu_leftOfSplit] = Last;
+        end
+
+        return true
+    end
+
+    return false
+end
+
+function find_split(tree::PhysicalOctree)
+    npids = length(tree.pids)
+
+    tree.DomainStartList = zeros(Int64, npids)
+    tree.DomainEndList = zeros(Int64, npids)
+    tree.list_load = zeros(Int64, npids)
+    tree.list_work = zeros(Float64, npids)
+
+    tree.DomainTask = zeros(Int64, tree.NTopLeaves)
+
+    find_split_kernel(tree, 1, npids, 1, tree.NTopLeaves)
+
+    tree.DomainMyStart = tree.DomainStartList[findfirst(x->x==myid(), tree.pids)]
+    tree.DomainMyEnd = tree.DomainEndList[findfirst(x->x==myid(), tree.pids)]
+end
+
+function find_split_kernel()
+    
+end
+
+function shift_split(tree::PhysicalOctree)
+    
+end
+
 function split_domain(tree::PhysicalOctree)
     bcast(tree, init_peano)
     bcast(tree, init_topnode)
@@ -200,9 +303,9 @@ function split_domain(tree::PhysicalOctree)
 
     bcast(tree, split_topnode)
 
-    tree.DomainFac = first(gather(tree, :DomainFac))
-    tree.NTopnodes = first(gather(tree, :NTopnodes))
-    tree.NTopLeaves = first(gather(tree, :NTopLeaves))
+    tree.DomainFac = getfrom(tree, first(tree.pids), :DomainFac)
+    tree.NTopnodes = getfrom(tree, first(tree.pids), :NTopnodes)
+    tree.NTopLeaves = getfrom(tree, first(tree.pids), :NTopLeaves)
 
     bcast(tree, sum_cost)
 
@@ -210,4 +313,10 @@ function split_domain(tree::PhysicalOctree)
     tree.DomainCount = sum(gather(tree, :DomainCount))
     bcast(tree, :DomainWork, tree.DomainWork)
     bcast(tree, :DomainCount, tree.DomainWork)
+
+    bcast(tree, find_split)
+    tree.DomainStartList = getfrom(tree, first(tree.pids), :DomainStartList)
+    tree.DomainEndList = getfrom(tree, first(tree.pids), :DomainEndList)
+
+    bcast(tree, shift_split)
 end
