@@ -27,8 +27,22 @@ reduce(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = red
 gather(tree::AbstractTree, expr, mod::Module = PhysicalTrees) = gather(tree.pids, :(registry[$(tree.id)].$expr), mod)
 gather(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = gather(f, tree.pids, :(registry[$(tree.id)].$expr), mod)
 
-allgather(tree::AbstractTree, src_expr, mod::Module = PhysicalTrees) = allgather(tree.pids, :(registry[$(tree.id)].$src_expr), mod)
-allgather(tree::AbstractTree, src_expr, targer_expr, mod::Module = PhysicalTrees) = allgather(tree.pids, :(registry[$(tree.id)].$src_expr), :(registry[$(tree.id)].$target_expr), mod)
+function allgather(tree::AbstractTree, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
+    data = gather(tree, src_expr, mod)
+    setfield!(tree, src_expr, data)
+    bcast(tree, target_expr, data, mod)
+end
 
-allreduce(tree::AbstractTree, f::Function, src_expr, mod::Module = PhysicalTrees) = allreduce(f, tree.pids, :(registry[$(tree.id)].$src_expr), mod)
-allreduce(tree::AbstractTree, f::Function, src_expr, target_expr, mod::Module = PhysicalTrees) = allreduce(f, tree.pids, :(registry[$(tree.id)].$src_expr), :(registry[$(tree.id)].$target_expr), mod)
+function allreduce(tree::AbstractTree, f::Function, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
+    data = reduce(tree, f, src_expr, mod)
+    setfield!(tree, src_expr, data)
+    bcast(tree, target_expr, data, mod)
+end
+
+# Commonly used functions
+sum(tree::AbstractTree, expr, mod::Module = PhysicalTrees) = sum(gather(tree, expr, mod))
+function allsum(tree::AbstractTree, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
+    data = sum(tree, src_expr, mod)
+    setfield!(tree, src_expr, data)
+    bcast(tree, target_expr, data, mod)
+end

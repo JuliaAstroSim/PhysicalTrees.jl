@@ -15,9 +15,10 @@ end
 
 function reinit_topnode(tree::PhysicalOctree)
     tree.topnodes = [TopNode(bits = tree.config.PeanoBits3D) for i=1:tree.config.ToptreeAllocSection]
-    tree.NTopnodes = 1
     tree.topnodes[1].Count = tree.NumTotal
-    tree.topnodes[1].Blocks = tree.NTopLeaves
+    tree.topnodes[1].Blocks = tree.NTopnodes
+
+    tree.NTopnodes = 1
 end
 
 function split_local_topnode_kernel(tree::PhysicalOctree, node::Int64, startkey::Int128)
@@ -65,8 +66,23 @@ function split_local_topnode_kernel(tree::PhysicalOctree, node::Int64, startkey:
     end # if topnodes[node].size >
 end
 
+function count_leaves(tree::PhysicalOctree)
+    topnodes = tree.topnodes
+    StartKeys = tree.StartKeys
+    Counts = tree.Counts
+    for i in 1:tree.NTopnodes
+        if topnodes[i].Daughter == -1
+            tree.NTopLeaves += 1
+            push!(StartKeys, topnodes[i].StartKey)
+            push!(Counts, topnodes[i].Count)
+        end
+    end
+end
+
 function split_local_topnode(tree::PhysicalOctree)
     split_local_topnode_kernel(tree, 1, Int128(0))
+
+    count_leaves(tree)
 end
 
 function split_topnode_kernel(tree::PhysicalOctree)
@@ -80,6 +96,9 @@ end
 function split_domain(tree::PhysicalOctree)
     bcast(tree, init_peano)
     bcast(tree, init_topnode)
+
     bcast(tree, split_local_topnode)
+    allsum(tree, :NTopLeaves)
+
     bcast(tree, split_topnode)
 end

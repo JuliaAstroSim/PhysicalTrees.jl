@@ -58,7 +58,6 @@ mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
     NumLocal::Int64
 
     NTopLeaves::Int64
-    NTopLeavesLocal::Int64
     StartKeys::Array{Int128,1}
     Counts::Array{Int128,1}
 
@@ -87,7 +86,6 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
     1,
     0,
 
-    0,
     0,
     Array{Int128,1}(),
     Array{Int128,1}(),
