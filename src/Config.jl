@@ -1,6 +1,7 @@
 struct OctreeConfig{I<:Integer, T<:AbstractFloat}
     ToptreeAllocSection::I
-    MaxToptreeNode::I
+    MaxTopnode::I
+    TopnodeFactor::Int64
 
     TreeAllocSection::I
     MaxTreeNode::I
@@ -18,7 +19,8 @@ function OctreeConfig(
     ;
     ToptreeAllocFactor = 0.3,
     ToptreeAllocSection = 256,
-    MaxToptreeNode = 20000,
+    MaxTopnode = 20000,
+    TopnodeFactor = 20,
 
     TreeAllocFactor = 0.3,
     TreeAllocSection = 512,
@@ -34,7 +36,8 @@ function OctreeConfig(
 
     return OctreeConfig(
         ToptreeAllocSection,
-        MaxToptreeNode,
+        MaxTopnode,
+        TopnodeFactor,
 
         TreeAllocSection,
         MaxTreeNode,

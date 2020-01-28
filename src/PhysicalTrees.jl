@@ -80,7 +80,7 @@ export
     include("Trees.jl")
     include("Iterators.jl")
 
-    #include("PrettyPrinting.jl")
+    include("PrettyPrinting.jl")
 
     include("setup/extent.jl")
     include("setup/topnodes.jl")

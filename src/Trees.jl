@@ -54,7 +54,7 @@ mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
     DomainFac::Float64
     peano_keys::Array{Int128,1}
     
-    NTopNodes::Int64
+    NTopnodes::Int64
     NumLocal::Int64
 
     NTopLeaves::Int64

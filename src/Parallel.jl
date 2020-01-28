@@ -25,7 +25,7 @@ scatter(tree::AbstractTree, data::Array, expr, mod::Module = PhysicalTrees) = sc
 reduce(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = reduce(f, tree.pids, :(registry[$(tree.id)].$expr), mod)
 
 gather(tree::AbstractTree, expr, mod::Module = PhysicalTrees) = gather(tree.pids, :(registry[$(tree.id)].$expr), mod)
-gather(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = gather(tree.pids, f, :(registry[$(tree.id)].$expr), mod)
+gather(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = gather(f, tree.pids, :(registry[$(tree.id)].$expr), mod)
 
 allgather(tree::AbstractTree, src_expr, mod::Module = PhysicalTrees) = allgather(tree.pids, :(registry[$(tree.id)].$src_expr), mod)
 allgather(tree::AbstractTree, src_expr, targer_expr, mod::Module = PhysicalTrees) = allgather(tree.pids, :(registry[$(tree.id)].$src_expr), :(registry[$(tree.id)].$target_expr), mod)
