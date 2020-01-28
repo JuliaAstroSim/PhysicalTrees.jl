@@ -1,7 +1,7 @@
 @info "Initializing"
 using Distributed
 using Unitful, UnitfulAstro
-addprocs(2)
+addprocs(4)
 
 @everywhere using PhysicalParticles
 @everywhere include("PhysicalTrees.jl/src/PhysicalTrees.jl")

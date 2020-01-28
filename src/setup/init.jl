@@ -28,15 +28,7 @@ function split_data(data::Array, i::Int64, N::Int64)
     end
 end
 
-function split_data(data::Dict, i::Int64, N::Int64)
-    d = Dict{Symbol,Array{T,1} where T}()
-    for key in keys(data)
-        d[key] = split_data(data[key], i, N)
-    end
-    return d
-end
-
-function init_octree(data::Union{Array,Dict}, config::OctreeConfig, pids::Array{Int64,1})
+function init_octree(data::Array, config::OctreeConfig, pids::Array{Int64,1})
     id = next_treeid()
     e = extent(data)
     e.SideLength *= config.ExtentMargin

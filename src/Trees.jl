@@ -1,4 +1,4 @@
-mutable struct Octree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
+mutable struct Octree2D{T<:Array} <: AbstractOctree2D{T}
     NodeType::UnionAll
 
     config::OctreeConfig
@@ -11,7 +11,7 @@ mutable struct Octree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
 
 end
 
-mutable struct Octree{T<:Union{Array,Dict}} <: AbstractOctree3D{T}
+mutable struct Octree{T<:Array} <: AbstractOctree3D{T}
     NodeType::UnionAll
 
     config::OctreeConfig
@@ -24,7 +24,7 @@ mutable struct Octree{T<:Union{Array,Dict}} <: AbstractOctree3D{T}
 
 end
 
-mutable struct PhysicalOctree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
+mutable struct PhysicalOctree2D{T<:Array} <: AbstractOctree2D{T}
     NodeType::UnionAll
 
     config::OctreeConfig
@@ -36,7 +36,7 @@ mutable struct PhysicalOctree2D{T<:Union{Array,Dict}} <: AbstractOctree2D{T}
     nodes::Array{AbstractOctreeNode2D}
 end
 
-mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
+mutable struct PhysicalOctree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
     id::Pair{Int64,Int64}
     isholder::Bool
 
@@ -53,7 +53,7 @@ mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
     # Tree data
     DomainFac::Float64
     peano_keys::Array{Int128,1}
-    
+
     NTopnodes::Int64
     NumLocal::Int64
 
@@ -72,6 +72,9 @@ mutable struct PhysicalOctree{T, I<:Integer} <: AbstractOctree3D{T}
 
     DomainMyStart::Int64
     DomainMyEnd::Int64
+
+    sendbuffer::Any
+    recvbuffer::Any
 end
 PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) = PhysicalOctree(
     id, isholder,
@@ -101,6 +104,9 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
 
     0,
     0,
+
+    nothing,
+    nothing,
 )
 
 function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)
@@ -111,5 +117,5 @@ function append!()
 end
 
 function close()
-    
+
 end

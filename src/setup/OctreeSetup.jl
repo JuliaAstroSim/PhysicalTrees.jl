@@ -1,8 +1,8 @@
-function octree(data::Array{T,N},
+function octree(data::Array,
                ;
                config = OctreeConfig(),
-               pids = workers(),) where T <: Union{AbstractPoint,AbstractParticle,Dict} where N
-    
+               pids = workers(),)
+
     tree = init_octree(data, config, pids)
 
     @info "Spliting domain"

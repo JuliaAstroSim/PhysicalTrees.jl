@@ -13,12 +13,3 @@ treetype(::AbstractPoint2D, ::Quantity) = Physical2D()
 treetype(::AbstractPoint3D, ::Quantity) = Physical3D()
 
 treetype(a::Array) = treetype(a[1])
-
-function treetype(data::Dict)
-    for v in values(data)
-        if length(v) > 0
-            return treetype(p)            
-        end
-    end
-    error("Empty data!")
-end

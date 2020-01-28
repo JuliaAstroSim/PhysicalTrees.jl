@@ -1,5 +1,3 @@
-extent(data::Dict) = extent([extent(p) for p in values(data)])
-
 function extent(tree::AbstractTree)
     if length(tree.pids) == 1
         return extent(tree.data)
@@ -10,14 +8,4 @@ function extent(tree::AbstractTree)
             return extent(tree.data)
         end
     end
-end
-
-datalength(data::Array) = length(data)
-
-function datalength(data::Dict)
-    n = 0
-    for v in values(data)
-        n += length(v)
-    end
-    return n
 end

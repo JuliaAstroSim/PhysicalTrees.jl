@@ -124,20 +124,6 @@ peanokey(p::AbstractParticle3D, Corner::PVector, DomainFac::Float64, u::Units, b
 peanokey(data::Array, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
 peanokey(data::Array, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
 
-function peanokey(data::Dict, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64)
-    d = Dict{Any, Array{Int128,1}}()
-    for v in keys(data)
-        d[v] = peanokey(v, Corner, DomainFac, u, bits)
-    end
-end
-
-function peanokey(data::Dict, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64)
-    d = Dict{Any, Array{Int128,1}}()
-    for v in keys(data)
-        d[v] = peanokey(v, Corner, DomainFac, u, bits)
-    end
-end
-
 # implementing scale-free Hilbert ordering. Real all about it here:
 # http://doc.cgal.org/latest/Spatial_sorting/index.html
 
@@ -277,5 +263,5 @@ mssort!(a::Array{T,1}; lim_ms::Int64=64, lim_hl::Int64=8, rat::Float64=0.125) wh
     _mssort!(a, lim_ms, lim_hl, rat)
 
 function sortpeano(tree::AbstractTree)
-    
+
 end
