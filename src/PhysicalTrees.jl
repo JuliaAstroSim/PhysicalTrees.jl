@@ -7,7 +7,7 @@ using Distributed
 using DataStructures
 
 
-import Base: +, -, show, real, iterate, length, summary
+import Base: +, -, show, real, iterate, length, append!
 import Unitful.Units
 import Distributed: procs
 
@@ -22,7 +22,7 @@ import ParallelOperations: bcast, scatter, reduce, gather, allgather, allreduce
 
 export
     # Base
-    +, -, show, real, iterate, length, summary,
+    +, -, show, real, iterate, length,
 
     # Parallel
     procs, bcast, scatter, reduce, gather, allgather, allreduce,

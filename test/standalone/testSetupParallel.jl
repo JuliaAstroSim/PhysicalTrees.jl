@@ -17,6 +17,6 @@ tree = octree(data)
 
 #=
 @everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].data
-@everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].topnodes
+@everywhere workers() @show length(PhysicalTrees.registry[Pair(1,1)].topnodes)
 
 =#
