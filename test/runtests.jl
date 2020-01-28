@@ -3,9 +3,15 @@ using Unitful, UnitfulAstro
 using Distributed
 
 using PhysicalParticles
+using ParallelOperations
 
-using PhysicalTrees
+pids = addprocs(4)
+@everywhere using PhysicalTrees
 
-include("testSetupSingle.jl")
+# Core
 include("testParallel.jl")
+include("testExtent.jl")
 include("testPeano.jl")
+
+# Stability
+include("testEmpty.jl")
