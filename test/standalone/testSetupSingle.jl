@@ -1,12 +1,15 @@
 @info "Initializing"
-include("../src/PhysicalTrees.jl")
+include("../../src/PhysicalTrees.jl")
 using .PhysicalTrees
 using Distributed
+using Unitful, UnitfulAstro
 
 using PhysicalParticles
 
 @info "Loading data"
-data = [Star() for i = 1:9]
+data = [PVector(1.0, 1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, -1.0, u"kpc"),
+        PVector(1.0, 0.0, -1.0, u"kpc"), PVector(-1.0, 0.0, 1.0, u"kpc"),
+        PVector(0.0, 0.0, -1.0, u"kpc"), PVector(-1.0, 0.0, 0.0, u"kpc")]
 
 @info "Building tree"
 tree = octree(data)
