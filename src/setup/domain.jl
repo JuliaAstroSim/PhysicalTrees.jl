@@ -105,7 +105,7 @@ function split_topnode_kernel(tree::PhysicalOctree, node::Int64, startkey::Int12
                 if length(topnodes) <= tree.config.MaxTopnode
                     append!(topnodes, [TopNode(bits = tree.config.PeanoBits3D) for i=1:tree.config.ToptreeAllocSection])
                 else
-                    error("Running out of topnodes, please increase the MaxTopNodes in Config")
+                    error("Running out of topnodes, please increase the MaxTopnode in Config")
                 end
             end
 

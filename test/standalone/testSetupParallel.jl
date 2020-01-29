@@ -21,4 +21,6 @@ tree = octree(data)
 @everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].DeleteIDs
 @everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].sendbuffer
 @everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].recvbuffer
+@everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].treenodes
+@everywhere workers() @show length(PhysicalTrees.registry[Pair(1,1)].treenodes)
 =#

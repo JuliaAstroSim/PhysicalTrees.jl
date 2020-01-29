@@ -13,19 +13,20 @@ struct OctreeConfig{I<:Integer, T<:AbstractFloat}
 
     units::Array
 
+    NumDataFactor::I
     MaxData::I
+    epsilon::Number
 end
 
 function OctreeConfig(
-    NumParticles::Integer,
+    NumData::Integer,
     ;
-    ToptreeAllocFactor = 0.3,
-    ToptreeAllocSection = 256,
+    
+    ToptreeAllocFactor::Int64 = 1,
     MaxTopnode = 2000,
     TopnodeFactor = 20,
 
-    TreeAllocFactor = 0.3,
-    TreeAllocSection = 256,
+    TreeAllocFactor::Int64 = 1,
     MaxTreenode = 200000,
 
     ExtentMargin = 1.001,
@@ -35,8 +36,19 @@ function OctreeConfig(
 
     units = uAstro,
 
-    MaxData = 10^(trunc(Int64, log10(NumParticles))+1)
+    NumDataFactor::Int64 = 1,
+    epsilon = 1.0e-4u"kpc",
 )
+
+    NumDataBase = 10^(trunc(Int64, log10(NumData)))
+    if NumDataBase < 10
+        NumDataBase = 10
+    end
+
+    ToptreeAllocSection = NumDataBase * ToptreeAllocFactor
+    TreeAllocSection = NumDataBase * TreeAllocFactor
+
+    MaxData = 10 * NumDataBase * NumDataFactor
 
     return OctreeConfig(
         ToptreeAllocSection,
@@ -53,6 +65,8 @@ function OctreeConfig(
 
         units,
 
+        NumDataFactor,
         MaxData,
+        epsilon,
     )
 end
