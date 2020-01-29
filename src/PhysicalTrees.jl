@@ -74,21 +74,23 @@ export
 
     include("Traits.jl")
     include("Parallel.jl")
-    include("Config.jl")
-    include("Peano.jl")
-    include("TreeNodes.jl")
-    include("Trees.jl")
-    include("Iterators.jl")
+    
+    include("octree/config.jl")
+    include("octree/peano.jl")
+    include("octree/nodes.jl")
+    include("octree/octrees.jl")
+    include("octree/iterators.jl")
+
+    include("octree/extent.jl")
+    include("octree/init.jl")
+    include("octree/domain.jl")
+    include("octree/build.jl")
+    include("octree/update.jl")
+
+    include("octree/setup.jl")
+    include("octree/search.jl")
+
 
     include("PrettyPrinting.jl")
-
-    include("setup/extent.jl")
-    include("setup/topnodes.jl")
-    include("setup/init.jl")
-    include("setup/domain.jl")
-    include("setup/build.jl")
-    include("setup/update.jl")
-    include("setup/OctreeSetup.jl")
-
     include("Analyse.jl")
 end
