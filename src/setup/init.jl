@@ -33,7 +33,7 @@ function init_octree(data::Array, config::OctreeConfig, pids::Array{Int64,1})
     e = extent(data)
     e.SideLength *= config.ExtentMargin
     type = treetype(data) # to avoid empty arrays
-    NumTotal = datalength(data)
+    NumTotal = length(data)
 
     @sync @distributed for i in 1:length(pids)
         d = split_data(data, i, length(pids))

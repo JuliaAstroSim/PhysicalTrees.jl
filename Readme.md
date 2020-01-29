@@ -9,6 +9,8 @@
   - [ ] @inbounds, @propagate_inbounds
 - [ ] general sum_cost
 - [ ] shift split
+- [ ] Compare performance between `Pair` and `Dict`
+- [ ] Optimize data transfering order to reduce blocking
 
 ## References
 

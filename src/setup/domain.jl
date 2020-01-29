@@ -2,7 +2,7 @@ function init_peano(tree::PhysicalOctree)
     uLength = tree.config.units[1]
     tree.DomainFac = ustrip(Float64, uLength^-1, 1.0 / tree.extent.SideLength) * (1 << tree.config.PeanoBits3D)
     tree.peano_keys = peanokey(tree.data, tree.extent.Corner, tree.DomainFac, uLength, tree.config.PeanoBits3D)
-    tree.NumLocal = datalength(tree.data)
+    tree.NumLocal = length(tree.data)
 
     sortpeano(tree)
 end
@@ -238,7 +238,7 @@ function find_split_kernel(tree::PhysicalOctree, cpustart::Int64, ncpu::Int64, F
         # found a viable split
         if ncpu_leftOfSplit == 1
             for i in First:split-1
-                tree.DomainTask[i] = cpustart
+                tree.DomainTask[i] = tree.pids[cpustart]
             end
 
             tree.list_load[cpustart] = load_leftOfSplit;
@@ -248,7 +248,7 @@ function find_split_kernel(tree::PhysicalOctree, cpustart::Int64, ncpu::Int64, F
 
         if ncpu - ncpu_leftOfSplit == 1
             for i in split:Last
-                tree.DomainTask[i] = cpustart + ncpu_leftOfSplit
+                tree.DomainTask[i] = tree.pids[cpustart + ncpu_leftOfSplit]
             end
 
             tree.list_load[cpustart + ncpu_leftOfSplit] = load - load_leftOfSplit;
@@ -278,12 +278,72 @@ function find_split(tree::PhysicalOctree)
     tree.DomainMyEnd = tree.DomainEndList[findfirst(x->x==myid(), tree.pids)]
 end
 
-function find_split_kernel()
+function shift_split_kernel(tree::PhysicalOctree)
     
 end
 
 function shift_split(tree::PhysicalOctree)
     
+end
+
+function fill_domain_buffer(tree::PhysicalOctree)
+    topnodes = tree.topnodes
+    DomainTask = tree.DomainTask
+
+    empty!(tree.local_to_go)
+    empty!(tree.DeleteIDs)
+    empty!(tree.sendbuffer)
+    empty!(tree.recvbuffer)
+
+    for p in tree.pids
+        tree.local_to_go[p] = 0
+        tree.sendbuffer[p] = Array{Pair{Any, Int128}, 1}()
+        tree.recvbuffer[p] = Array{Pair{Any, Int128}, 1}()
+    end
+
+    for i in 1:tree.NumLocal
+        no = 1
+        while topnodes[no].Daughter >= 0
+            no = trunc(Int64, topnodes[no].Daughter + (tree.peano_keys[i] - topnodes[no].StartKey) / (topnodes[no].Size / 8))
+        end
+        no = topnodes[no].Leaf
+
+        if DomainTask[no] != myid()
+            tree.local_to_go[DomainTask[no]] += 1
+            push!(tree.sendbuffer[DomainTask[no]], Pair(tree.data[i], tree.peano_keys[i]))
+            push!(tree.DeleteIDs, i)
+        end
+    end
+
+    deleteat!(tree.data, tree.DeleteIDs)
+    deleteat!(tree.peano_keys, tree.DeleteIDs)
+end
+
+function send_domain_buffer(tree::PhysicalOctree)
+    # Reduce communication blocking
+    # Move myid to last
+    src = myid()
+    circpids = circshift(tree.pids, length(tree.pids) - findfirst(x->x==src, tree.pids))
+
+    for target in circpids[1:end-1]
+        tree.recvbuffer[target] = Distributed.remotecall_eval(PhysicalTrees, target, :(registry[$(tree.id)].sendbuffer[$src]))
+    end
+end
+
+function clear_domain_buffer(tree::PhysicalOctree)
+    data = tree.data
+    peano_keys = tree.peano_keys
+
+    for p in Iterators.flatten(values(tree.recvbuffer))
+        push!(data, p.first)
+        push!(peano_keys, p.second)
+    end
+
+    tree.NumLocal = length(data)
+
+    empty!(tree.DeleteIDs)
+    empty!(tree.sendbuffer)
+    empty!(tree.recvbuffer)
 end
 
 function split_domain(tree::PhysicalOctree)
@@ -319,4 +379,8 @@ function split_domain(tree::PhysicalOctree)
     tree.DomainEndList = getfrom(tree, first(tree.pids), :DomainEndList)
 
     bcast(tree, shift_split)
+
+    @sync bcast(tree, fill_domain_buffer)
+    @sync bcast(tree, send_domain_buffer)
+    @sync bcast(tree, clear_domain_buffer)
 end

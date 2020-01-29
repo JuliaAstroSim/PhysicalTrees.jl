@@ -73,8 +73,10 @@ mutable struct PhysicalOctree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
     DomainMyStart::Int64
     DomainMyEnd::Int64
 
-    sendbuffer::Any
-    recvbuffer::Any
+    local_to_go::Dict{Int64, Int64}
+    DeleteIDs::Array{Int64,1}
+    sendbuffer::Dict{Int64, Array{Any,1}}
+    recvbuffer::Dict{Int64, Array{Any,1}}
 end
 PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) = PhysicalOctree(
     id, isholder,
@@ -105,8 +107,10 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
     0,
     0,
 
-    nothing,
-    nothing,
+    Dict{Int64, Int64}(),
+    Array{Int64,1}(),
+    Dict{Int64, Array{Any,1}}(),
+    Dict{Int64, Array{Any,1}}(),
 )
 
 function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)

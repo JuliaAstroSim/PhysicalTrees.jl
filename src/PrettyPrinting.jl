@@ -20,7 +20,7 @@ Base.show(io::IO, tree::AbstractTree) = summary(io, tree)
 function Base.show(io::IO, config::OctreeConfig)
     print(
         io,
-        "Config for Octrees:",
+        "\n  ----------------------- Config for Octrees: -----------------------",
         "\n    Toptree allocation section: ", config.ToptreeAllocSection,
         "\n                  Max Topnodes: ", config.MaxTopnode,
         "\n                Topnode Factor: ", config.TopnodeFactor,
@@ -30,14 +30,19 @@ function Base.show(io::IO, config::OctreeConfig)
         "\n                 3D Peano bits: ", config.PeanoBits3D,
         "\n                 2D Peano bits: ", config.PeanoBits2D,
         "\n                         units: ", config.units,
+        "\n"
     )
 end
 
 function datainfo(tree::AbstractTree)
+    local_to_go = gather(tree, :local_to_go)
+    local_to_go_string = string([string(x, "\n                                ") for x in local_to_go]...)
+
     return string(
-        "Data info:",
-        "\n   total: ", tree.NumTotal,
-        "\n    type: ", typeof(tree.data),
-        "\n    cuts: ", gather(tree, :NumLocal),
+        "\n  -------------------------- Data info --------------------------",
+        "\n                         total: ", tree.NumTotal,
+        "\n                          type: ", typeof(tree.data),
+        "\n                          cuts: ", gather(tree, :NumLocal),
+        "\n              last communicate: ", local_to_go_string,
     )
 end
