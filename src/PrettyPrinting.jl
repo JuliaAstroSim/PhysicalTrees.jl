@@ -26,7 +26,7 @@ function Base.show(io::IO, config::OctreeConfig)
         "\n                  Max Topnodes: ", config.MaxTopnode,
         "\n                Topnode Factor: ", config.TopnodeFactor,
         "\n       Tree allocation section: ", config.TreeAllocSection,
-        "\n                Max Tree nodes: ", config.MaxTreeNode,
+        "\n                Max Tree nodes: ", config.MaxTreenode,
         "\n                 Extent margin: ", config.ExtentMargin,
         "\n                 3D Peano bits: ", config.PeanoBits3D,
         "\n                 2D Peano bits: ", config.PeanoBits2D,

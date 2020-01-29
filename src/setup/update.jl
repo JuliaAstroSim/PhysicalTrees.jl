@@ -118,7 +118,7 @@ function finish_last(tree::AbstractTree)
         if tree.last > tree.config.MaxData + tree.config.MaxTreenode
             tree.NextNodes[tree.last - tree.config.MaxTreenode] = 0
         else
-            tree.Nodes[tree.last - tree.config.MaxData].NextNode = 0
+            tree.treenodes[tree.last - tree.config.MaxData].NextNode = 0
         end
     else
         tree.NextNodes[tree.last] = 0
@@ -153,11 +153,80 @@ function fill_pseudo_buffer(tree::AbstractTree)
 end
 
 function update_pseudo_data(tree::AbstractTree)
-    #empty!(tree.MomentsToSend)
+    empty!(tree.MomentsToSend)
+
+    sold = PVector(u"kpc")
+    snew = PVector(u"kpc")
+    vsold = PVector(u"kpc/Gyr")
+    vsnew = PVector(u"kpc/Gyr")
+    massold = 0.0u"Msun"
+    massnew = 0.0u"Msun"
+
+    MaxData = tree.config.MaxData
+    treenodes = tree.treenodes
+    NextNodes = tree.NextNodes
+    ExtNodes = tree.ExtNodes
+    DomainMoment = tree.DomainMoment
+
+    for i in 1:tree.NTopLeaves
+        if i < tree.DomainMyStart || i > tree.DomainMyEnd
+            no = tree.DomainNodeIndex[i]
+
+            sold = treenodes[no - MaxData].MassCenter
+            vsold = ExtNodes[no - MaxData].vs
+            massold = treenodes[no - MaxData].Mass
+
+            snew = DomainMoment[i].MassCenter
+            vsnew = DomainMoment[i].Vel
+            massnew = DomainMoment[i].Mass
+
+            while no > 0
+                mm = treenodes[no - MaxData].Mass + massnew - massold
+                if mm > 0.0u"Msun"
+                    treenodes[no - MaxData].MassCenter = (treenodes[no - MaxData].Mass * treenodes[no - MaxData].MassCenter +
+                                                            massnew * snew - massold * sold) / mm
+                    ExtNodes[no - MaxData].vs = (treenodes[no - MaxData].Mass * ExtNodes[no - MaxData].vs +
+                                                            massnew * vsnew - massold * vsold) / mm
+                end
+                treenodes[no - MaxData].Mass = mm
+                no = treenodes[no - MaxData].Father
+            end # while
+        end # if
+    end # for
 end
 
 function flag_local_treenodes(tree::AbstractTree)
-    
+    treenodes = tree.treenodes
+    MaxData = tree.config.MaxData
+    # mark all top-level nodes
+    for i in 1:length(tree.DomainNodeIndex)
+        no = tree.DomainNodeIndex[i]
+
+        while no > 0
+            if (treenodes[no - MaxData].BitFlag & 1) > 0
+                break
+            end
+
+            treenodes[no - MaxData].BitFlag |= 1
+
+            no = treenodes[no - MaxData].Father
+        end
+    end
+
+    # mark top-level nodes that contain local particles
+    for i in tree.DomainMyStart:tree.DomainMyEnd
+        no = tree.DomainNodeIndex[i]
+
+        while no > 0
+            if (treenodes[no - MaxData].BitFlag & 2) > 0
+                break
+            end
+
+            treenodes[no - MaxData].BitFlag |= 2
+
+            no = treenodes[no - MaxData].Father
+        end
+    end
 end
 
 function update(tree::AbstractTree)
