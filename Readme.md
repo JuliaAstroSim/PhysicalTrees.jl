@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] Fix units
 - [ ] Data sorting by Peano key
 - [ ] Atomic operations
 - [ ] Multi-threads
@@ -11,6 +12,7 @@
 - [ ] shift split
 - [ ] Compare performance between `Pair` and `Dict`
 - [ ] Optimize data transfering order to reduce blocking
+- [ ] UNEQUALSOFTENINGS?
 
 ## References
 

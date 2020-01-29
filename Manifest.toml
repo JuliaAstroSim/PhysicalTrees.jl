@@ -81,7 +81,7 @@ version = "1.1.0"
 
 [[ParallelOperations]]
 deps = ["Distributed", "Test"]
-git-tree-sha1 = "c6a0eaa06612497121c819081d117bf18cbeaef6"
+git-tree-sha1 = "9f4fad4d41cdd0fb1d36cca7fd440c83ae87fb29"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaAstroSim/ParallelOperations.jl"
 uuid = "09c1cff2-b94d-4c31-85a1-721512e21c63"
@@ -95,7 +95,9 @@ version = "0.2.0"
 
 [[PhysicalParticles]]
 deps = ["DocStringExtensions", "LinearAlgebra", "NearestNeighbors", "PhysicalConstants", "Statistics", "Test", "Unitful", "UnitfulAstro"]
-git-tree-sha1 = "ad3de39b2638ba9200da5072d83dec94e665fd3a"
+git-tree-sha1 = "c1082b12933ac592a0325856fa77d91ccbde8386"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaAstroSim/PhysicalParticles.jl"
 uuid = "78724250-4eb2-11e9-0f34-13a7aab864c5"
 version = "1.0.1"
 
