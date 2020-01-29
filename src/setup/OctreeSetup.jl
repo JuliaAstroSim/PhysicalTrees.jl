@@ -1,6 +1,6 @@
 function octree(data::Array,
                ;
-               config = OctreeConfig(),
+               config = OctreeConfig(length(data)),
                pids = workers(),)
 
     tree = init_octree(data, config, pids)

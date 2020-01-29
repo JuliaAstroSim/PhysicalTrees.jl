@@ -75,6 +75,19 @@ mutable struct PhysicalOctree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
 
     local_to_go::Dict{Int64, Int64}
     DeleteIDs::Array{Int64,1}
+
+    # Tree
+    DomainNodeIndex::Array{Int64,1}
+    treenodes::Array{PhysicalOctreeNode,1}
+    NTreenodes::Int64
+    nextfreenode::Int64
+
+    DomainMoment::Array{DomainNode,1}
+    NextNodes::Array{Int64,1}
+    Fathers::Array{Int64,1}
+    ExtNodes::Array{ExtNode,1}
+    last::Int64
+
     sendbuffer::Dict{Int64, Array{Any,1}}
     recvbuffer::Dict{Int64, Array{Any,1}}
 end
@@ -109,6 +122,19 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
 
     Dict{Int64, Int64}(),
     Array{Int64,1}(),
+
+    # Tree
+    Array{Int64,1}(),
+    Array{PhysicalOctreeNode,1}(),
+    0,
+    0,
+
+    Array{DomainNode,1}(),
+    zeros(Int64, config.MaxData + config.MaxTopnode),
+    zeros(Int64, config.MaxData),
+    [ExtNode() for i in 1:config.MaxTreenode],
+    0,
+
     Dict{Int64, Array{Any,1}}(),
     Dict{Int64, Array{Any,1}}(),
 )

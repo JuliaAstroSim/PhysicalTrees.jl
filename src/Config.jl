@@ -4,7 +4,7 @@ struct OctreeConfig{I<:Integer, T<:AbstractFloat}
     TopnodeFactor::Int64
 
     TreeAllocSection::I
-    MaxTreeNode::I
+    MaxTreenode::I
 
     ExtentMargin::T
 
@@ -12,19 +12,21 @@ struct OctreeConfig{I<:Integer, T<:AbstractFloat}
     PeanoBits2D::Int64
 
     units::Array
+
+    MaxData::I
 end
 
 function OctreeConfig(
-    NumParticles = 0,
+    NumParticles::Integer,
     ;
     ToptreeAllocFactor = 0.3,
     ToptreeAllocSection = 256,
-    MaxTopnode = 20000,
+    MaxTopnode = 2000,
     TopnodeFactor = 20,
 
     TreeAllocFactor = 0.3,
-    TreeAllocSection = 512,
-    MaxTreeNode = 200000,
+    TreeAllocSection = 256,
+    MaxTreenode = 200000,
 
     ExtentMargin = 1.001,
 
@@ -32,6 +34,8 @@ function OctreeConfig(
     PeanoBits2D = 31,
 
     units = uAstro,
+
+    MaxData = 10^(trunc(Int64, log10(NumParticles))+1)
 )
 
     return OctreeConfig(
@@ -40,7 +44,7 @@ function OctreeConfig(
         TopnodeFactor,
 
         TreeAllocSection,
-        MaxTreeNode,
+        MaxTreenode,
 
         ExtentMargin,
 
@@ -48,5 +52,7 @@ function OctreeConfig(
         PeanoBits2D,
 
         units,
+
+        MaxData,
     )
 end
