@@ -136,15 +136,24 @@ function update_local_data(tree::AbstractTree)
 end
 
 function fill_pseudo_buffer(tree::AbstractTree)
-    
+    treenodes = tree.treenodes
+    DomainMoment = tree.DomainMoment
+    MaxData = tree.config.MaxData
+
+    empty!(tree.MomentsToSend)
+
+    for i in tree.DomainMyStart : tree.DomainMyEnd
+        no = tree.DomainNodeIndex[i]
+        DomainMoment[i].Mass = treenodes[no - MaxData].Mass
+        DomainMoment[i].MassCenter = treenodes[no - MaxData].MassCenter
+        DomainMoment[i].Vel = tree.ExtNodes[no - MaxData].vs
+    end
+
+    tree.MomentsToSend = tree.DomainMoment[tree.DomainMyStart:tree.DomainMyEnd]
 end
 
-function send_pseudo_buffer(tree::AbstractTree)
-    
-end
-
-function clear_pseudo_buffer(tree::AbstractTree)
-    
+function update_pseudo_data(tree::AbstractTree)
+    #empty!(tree.MomentsToSend)
 end
 
 function flag_local_treenodes(tree::AbstractTree)
@@ -154,7 +163,11 @@ end
 function update(tree::AbstractTree)
     bcast(tree, update_local_data)
     bcast(tree, fill_pseudo_buffer)
-    bcast(tree, send_pseudo_buffer)
-    bcast(tree, clear_pseudo_buffer)
+
+    # send pseudo buffer
+    tree.DomainMoment = reduce(vcat, gather(tree, :MomentsToSend))
+    bcast(tree, :DomainMoment, tree.DomainMoment)
+
+    bcast(tree, update_pseudo_data)
     bcast(tree, flag_local_treenodes)
 end

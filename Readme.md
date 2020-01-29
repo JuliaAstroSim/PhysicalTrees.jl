@@ -3,6 +3,7 @@
 ## TODO
 
 - [ ] Fix units
+- [ ] test Particles
 - [ ] Data sorting by Peano key
 - [ ] Atomic operations
 - [ ] Multi-threads
@@ -13,6 +14,8 @@
 - [ ] Compare performance between `Pair` and `Dict`
 - [ ] Optimize data transfering order to reduce blocking
 - [ ] UNEQUALSOFTENINGS?
+- [ ] non-unit data
+- [ ] 2D tree
 
 ## References
 
