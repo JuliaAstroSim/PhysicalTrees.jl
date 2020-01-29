@@ -14,6 +14,7 @@ data = [PVector(1.0, 1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, -1.0, u"kpc"),
 
 @info "Building tree"
 tree = octree(data)
+print(tree)
 
 #=
 @everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].data

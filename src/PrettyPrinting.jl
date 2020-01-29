@@ -10,6 +10,7 @@ function summary(tree::AbstractTree)
              "\n           Domain end list: ", tree.DomainEndList,
              "\n                 Load list: ", tree.list_load,
              "\n                 Work list: ", tree.list_work,
+             "\n      Number of tree nodes: ", gather(tree, :NTreenodes),
              "\n    ", tree.extent,
              "\n", datainfo(tree),
     )

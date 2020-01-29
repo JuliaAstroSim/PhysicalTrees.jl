@@ -176,7 +176,44 @@ function insert_data(tree::PhysicalOctree)
 end
 
 function insert_data_pseudo(tree::PhysicalOctree)
-    
+    tree.DomainMoment = [DomainNode() for i in 1:tree.NTopLeaves]
+
+    MaxData = tree.config.MaxData
+    MaxTreenode = tree.config.MaxTreenode
+    treenodes = tree.treenodes
+    for i in 1:tree.NTopLeaves
+        @inbounds tree.DomainMoment[i].Mass = 0.0u"Msun"
+        @inbounds tree.DomainMoment[i].MassCenter = treenodes[tree.DomainNodeIndex[i] - MaxData].Center
+    end
+
+    for i in 1:tree.NTopLeaves
+        if i < tree.DomainMyStart || i > tree.DomainMyEnd
+            index = MaxData + 1
+
+            while true
+                if index > MaxData
+                    if index > MaxData + MaxTreenode
+                        @show index
+                        error("Error in DomainMoment indexing #01")
+                    end
+
+                    subnode = find_subnode(tree.DomainMoment[i].MassCenter, treenodes[index - MaxData].Center)
+                    nn = treenodes[index - MaxData].DaughterID[subnode]
+
+                    if nn > 0
+                        index = nn
+                    else
+                        # here we have found an empty slot where we can attach the pseudo particle as a leaf
+                        treenodes[index - MaxData].DaughterID[subnode] = MaxData + MaxTreenode + i
+                        break
+                    end
+                else
+                    @show index
+                    error("Error in DomainMoment indexing #02, index = ", index, ", MaxData = ", MaxData)
+                end
+            end
+        end
+    end
 end
 
 function build(tree::PhysicalOctree)
