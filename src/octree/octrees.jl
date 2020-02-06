@@ -147,6 +147,10 @@ function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig
     registry[id] = PhysicalOctree(id, isholder, config, extent, data, NumTotal, pids)
 end
 
+function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Unitless3D)
+    
+end
+
 function append!()
 end
 

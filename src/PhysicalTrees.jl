@@ -81,7 +81,6 @@ export
     include("octree/octrees.jl")
     include("octree/iterators.jl")
 
-    include("octree/extent.jl")
     include("octree/init.jl")
     include("octree/domain.jl")
     include("octree/build.jl")
