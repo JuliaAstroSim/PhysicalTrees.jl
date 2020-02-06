@@ -15,7 +15,7 @@ using PhysicalParticles
 import PhysicalParticles: extent
 
 using ParallelOperations
-import ParallelOperations: sendto, getfrom, bcast, scatter, reduce, gather, allgather, allreduce
+import ParallelOperations: sendto, getfrom, bcast, scatter, reduce, gather, allgather, allreduce, allsum
 
 #using SimulationProfiles
 
@@ -25,7 +25,7 @@ export
     +, -, show, real, iterate, length, sum,
 
     # Parallel
-    procs, sendto, getfrom, bcast, scatter, reduce, gather, allgather, allreduce,
+    procs, sendto, getfrom, bcast, scatter, reduce, gather, allgather, allreduce, allsum,
 
     # Traits
     treetype,

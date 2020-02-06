@@ -32,13 +32,13 @@ gather(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = gat
 
 function allgather(tree::AbstractTree, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
     data = gather(tree, src_expr, mod)
-    setfield!(tree, src_expr, data)
+    setfield!(tree, target_expr, data)
     bcast(tree, target_expr, data, mod)
 end
 
 function allreduce(tree::AbstractTree, f::Function, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
     data = reduce(tree, f, src_expr, mod)
-    setfield!(tree, src_expr, data)
+    setfield!(tree, target_expr, data)
     bcast(tree, target_expr, data, mod)
 end
 
@@ -46,6 +46,6 @@ end
 sum(tree::AbstractTree, expr, mod::Module = PhysicalTrees) = sum(gather(tree, expr, mod))
 function allsum(tree::AbstractTree, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
     data = sum(tree, src_expr, mod)
-    setfield!(tree, src_expr, data)
+    setfield!(tree, target_expr, data)
     bcast(tree, target_expr, data, mod)
 end

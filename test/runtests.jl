@@ -16,8 +16,8 @@ UnitlessData = [PVector(1.0, 1.0, 1.0), PVector(-1.0, -1.0, -1.0),
                 PVector(1.0, 0.0, -1.0), PVector(-1.0, 0.0, 1.0),
                 PVector(0.0, 0.0, -1.0), PVector(-1.0, 0.0, 0.0)]
 
-AstroTreeParallel = octree(data, pids = pids)
-AstroTreeSingle = octree(data, pids = [1])
+AstroTreeParallel = octree(AstroData, pids = pids)
+AstroTreeSingle = octree(AstroData, pids = [1])
 
 tree = AstroTreeParallel
 
