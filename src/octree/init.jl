@@ -40,7 +40,7 @@ function split_data(data::Array, i::Int64, N::Int64)
     end
 end
 
-function init_octree(data::Array, config::OctreeConfig, pids::Array{Int64,1})
+function init_octree(data::Array, units, config::OctreeConfig, pids::Array{Int64,1})
     id = next_treeid()
     e = extent(data)
     e.SideLength *= config.ExtentMargin
@@ -49,13 +49,13 @@ function init_octree(data::Array, config::OctreeConfig, pids::Array{Int64,1})
 
     @sync @distributed for i in 1:length(pids)
         d = split_data(data, i, length(pids))
-        @everywhere pids[i] init_octree($id, false, $config, $e, $d, $NumTotal, $pids, $type)
+        @everywhere pids[i] init_octree($id, false, $units, $config, $e, $d, $NumTotal, $pids, $type)
     end
 
     if haskey(registry, id) # This holder is included in pids
         registry[id].isholder = true
     else # Not included, so to init a new tree
-        init_octree(id, true, config, e, empty(data), NumTotal, pids, type)
+        init_octree(id, true, units, config, e, empty(data), NumTotal, pids, type)
     end
 
     return registry[id]

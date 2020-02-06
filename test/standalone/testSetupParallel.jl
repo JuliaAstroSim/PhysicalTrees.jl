@@ -37,6 +37,11 @@ UnitlessParticleData2D = [Massless2D() for i in 1:6]
 assign_points(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
 
 @info "Building tree"
+
+#! Test single first, since some error info could not be fetched from remote
+tree1 = octree(AstroPVectorData, pids = [1])
+t1 = octree(UnitlessPVectorData, pids = [1])
+
 tree = octree(AstroPVectorData)
 t = octree(UnitlessPVectorData)
 

@@ -1,10 +1,14 @@
+getmass(p::AbstractPoint, ::Nothing) = 0.0
 getmass(p::AbstractPoint, u::Units) = 0.0 * u
 getpos(p::AbstractPoint) = p
+getvel(p::AbstractPoint, ::Nothing) = zero(p)
 getvel(p::AbstractPoint, u::Units) = zero(p) * (one(p.x) * u)
 
+getmass(p::AbstractParticle, ::Nothing) = p.Mass
 getmass(p::AbstractParticle, u::Units) = uconvert(u, p.Mass)
 getpos(p::AbstractParticle) = p.Pos
-getvel(p::AbstractParticle, u::Units) = p.Vel
+getvel(p::AbstractParticle, ::Nothing) = p.Vel
+getvel(p::AbstractParticle, u::Units) = uconvert(u, p.Vel)
 
 function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, father::Int64)
     MaxData = tree.config.MaxData
@@ -12,6 +16,15 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
     treenodes = tree.treenodes
     NextNodes = tree.NextNodes
     ExtNodes = tree.ExtNodes
+
+    uLength = getuLength(tree.units)
+    uTime = getuTime(tree.units)
+    uMass = getuMass(tree.units)
+
+    mass = nothing
+    s = nothing
+    vs = nothing
+    hmax = nothing
 
     if no > MaxData && no <= MaxData + MaxTreenode  # internal node
         suns = deepcopy(treenodes[no - MaxData].DaughterID)
@@ -29,10 +42,17 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
         end
         tree.last = no
 
-        mass = 0.0u"Msun"
-        s = PVector(u"kpc")
-        vs = PVector(u"kpc/Gyr")
-        hmax = 0.0u"kpc"
+        if isnothing(tree.units)
+            mass = 0.0
+            s = PVector()
+            vs = PVector()
+            hmax = 0.0
+        else
+            mass = 0.0 * uMass
+            s = PVector(uLength)
+            vs = PVector(uLength / uTime)
+            hmax = 0.0 * uLength
+        end
 
         for j in 1:8
             p = suns[j]
@@ -59,8 +79,8 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
                 if p > MaxData
                     if p <= MaxData + MaxTreenode
                         mass += treenodes[p - MaxData].Mass
-                        s += ustrip(Float64, u"Msun", treenodes[p - MaxData].Mass) * treenodes[p - MaxData].MassCenter
-                        vs += ustrip(Float64, u"Msun", treenodes[p - MaxData].Mass) * ExtNodes[p - MaxData].vs
+                        s += ustrip(uMass, treenodes[p - MaxData].Mass) * treenodes[p - MaxData].MassCenter
+                        vs += ustrip(uMass, treenodes[p - MaxData].Mass) * ExtNodes[p - MaxData].vs
 
                         hmax = max(hmax, ExtNodes[p - MaxData].hmax)
                     else # Pseudo-particle
@@ -69,16 +89,16 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
                 else  # A particle
                     pa = tree.data[p]
 
-                    mass += getmass(pa, u"Msun")
-                    s += ustrip(Float64, u"Msun", getmass(pa, u"Msun")) * getpos(pa)
-                    vs += ustrip(Float64, u"Msun", getmass(pa, u"Msun")) * getvel(pa, u"kpc/Gyr")
+                    mass += getmass(pa, uMass)
+                    s += ustrip(uMass, getmass(pa, uMass)) * getpos(pa)
+                    vs += ustrip(uMass, getmass(pa, uMass)) * getvel(pa, uLength / uTime)
                 end
             end
         end
 
-        if mass > 0.0u"Msun"
-            s /= ustrip(Float64, u"Msun", mass)
-            vs /= ustrip(Float64, u"Msun", mass)
+        if ustrip(mass) > 0.0
+            s /= ustrip(uMass, mass)
+            vs /= ustrip(uMass, mass)
         else
             s = treenodes[no - MaxData].Center # Geometric center
         end
@@ -155,12 +175,25 @@ end
 function update_pseudo_data(tree::AbstractTree)
     empty!(tree.MomentsToSend)
 
-    sold = PVector(u"kpc")
-    snew = PVector(u"kpc")
-    vsold = PVector(u"kpc/Gyr")
-    vsnew = PVector(u"kpc/Gyr")
-    massold = 0.0u"Msun"
-    massnew = 0.0u"Msun"
+    uLength = getuLength(tree.units)
+    uTime = getuTime(tree.units)
+    uMass = getuMass(tree.units)
+
+    if isnothing(tree.units)
+        sold = PVector()
+        snew = PVector()
+        vsold = PVector()
+        vsnew = PVector()
+        massold = 0.0
+        massnew = 0.0
+    else
+        sold = PVector(uLength)
+        snew = PVector(uLength)
+        vsold = PVector(uLength / uTime)
+        vsnew = PVector(uLength / uTime)
+        massold = 0.0 * uMass
+        massnew = 0.0 * uMass
+    end
 
     MaxData = tree.config.MaxData
     treenodes = tree.treenodes
@@ -182,7 +215,7 @@ function update_pseudo_data(tree::AbstractTree)
 
             while no > 0
                 mm = treenodes[no - MaxData].Mass + massnew - massold
-                if mm > 0.0u"Msun"
+                if ustrip(mm) > 0.0
                     treenodes[no - MaxData].MassCenter = (treenodes[no - MaxData].Mass * treenodes[no - MaxData].MassCenter +
                                                             massnew * snew - massold * sold) / mm
                     ExtNodes[no - MaxData].vs = (treenodes[no - MaxData].Mass * ExtNodes[no - MaxData].vs +

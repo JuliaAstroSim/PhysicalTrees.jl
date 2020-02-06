@@ -11,11 +11,9 @@ struct OctreeConfig{I<:Integer, T<:AbstractFloat}
     PeanoBits3D::Int64
     PeanoBits2D::Int64
 
-    units::Array
-
     NumDataFactor::I
     MaxData::I
-    epsilon::Number
+    epsilon::Float64
 end
 
 function OctreeConfig(
@@ -34,10 +32,8 @@ function OctreeConfig(
     PeanoBits3D = 21,
     PeanoBits2D = 31,
 
-    units = uAstro,
-
     NumDataFactor::Int64 = 1,
-    epsilon = 1.0e-4u"kpc",
+    epsilon = 1.0e-4,
 )
 
     NumDataBase = 10^(trunc(Int64, log10(NumData)))
@@ -62,8 +58,6 @@ function OctreeConfig(
 
         PeanoBits3D,
         PeanoBits2D,
-
-        units,
 
         NumDataFactor,
         MaxData,

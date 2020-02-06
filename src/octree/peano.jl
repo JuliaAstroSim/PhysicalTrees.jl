@@ -94,35 +94,34 @@ function peanokey(x::Int64, y::Int64, z::Int64; bits::Int64=peano_3D_bits)
     return key
 end
 
-# Do not remove u::Units, let the compiler do dispatch work
-function peanokey(p::PVector2D{T}, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) where T<:Number
+function peanokey(p::PVector2D, Corner::PVector2D, DomainFac::AbstractFloat, bits::Int64=peano_2D_bits)
     peanokey(trunc(Int64, (p.x - Corner.x) * DomainFac),
              trunc(Int64, (p.y - Corner.y) * DomainFac), bits = bits)
 end
 
-function peanokey(p::PVector2D{T}, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) where T<:Quantity
-    peanokey(trunc(Int64, ustrip(Float64, u, p.x - Corner.x) * DomainFac),
-             trunc(Int64, ustrip(Float64, u, p.y - Corner.y) * DomainFac), bits = bits)
+function peanokey(p::PVector2D, Corner::PVector2D, DomainFac::Quantity, bits::Int64=peano_2D_bits)
+    peanokey(trunc(Int64, upreferred((p.x - Corner.x) * DomainFac)),
+             trunc(Int64, upreferred((p.y - Corner.y) * DomainFac)), bits = bits)
 end
 
-peanokey(p::AbstractParticle2D, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64=peano_2D_bits) = peanokey(p.Pos, Corner, DomainFac, u, bits)
+peanokey(p::AbstractParticle2D, Corner::PVector2D, DomainFac::Number, bits::Int64=peano_2D_bits) = peanokey(p.Pos, Corner, DomainFac, bits)
 
-function peanokey(p::PVector{T}, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) where T<:Number
+function peanokey(p::PVector, Corner::PVector, DomainFac::Float64, bits::Int64=peano_3D_bits)
     peanokey(trunc(Int64, (p.x - Corner.x) * DomainFac),
              trunc(Int64, (p.y - Corner.y) * DomainFac),
              trunc(Int64, (p.z - Corner.z) * DomainFac), bits = bits)
 end
 
-function peanokey(p::PVector{T}, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) where T<:Quantity
-    peanokey(trunc(Int64, ustrip(Float64, u, p.x - Corner.x) * DomainFac),
-             trunc(Int64, ustrip(Float64, u, p.y - Corner.y) * DomainFac),
-             trunc(Int64, ustrip(Float64, u, p.z - Corner.z) * DomainFac), bits = bits)
+function peanokey(p::PVector, Corner::PVector, DomainFac::Quantity, bits::Int64=peano_3D_bits)
+    peanokey(trunc(Int64, upreferred((p.x - Corner.x) * DomainFac)),
+             trunc(Int64, upreferred((p.y - Corner.y) * DomainFac)),
+             trunc(Int64, upreferred((p.z - Corner.z) * DomainFac)), bits = bits)
 end
 
-peanokey(p::AbstractParticle3D, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64=peano_3D_bits) = peanokey(p.Pos, Corner, DomainFac, u, bits)
+peanokey(p::AbstractParticle3D, Corner::PVector, DomainFac::Number, bits::Int64=peano_3D_bits) = peanokey(p.Pos, Corner, DomainFac, bits)
 
-peanokey(data::Array, Corner::PVector2D, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
-peanokey(data::Array, Corner::PVector, DomainFac::Float64, u::Units, bits::Int64) = [peanokey(p, Corner, DomainFac, u, bits) for p in data]
+peanokey(data::Array, Corner::PVector2D, DomainFac::Number, bits::Int64) = [peanokey(p, Corner, DomainFac, bits) for p in data]
+peanokey(data::Array, Corner::PVector, DomainFac::Number, bits::Int64) = [peanokey(p, Corner, DomainFac, bits) for p in data]
 
 # implementing scale-free Hilbert ordering. Real all about it here:
 # http://doc.cgal.org/latest/Spatial_sorting/index.html

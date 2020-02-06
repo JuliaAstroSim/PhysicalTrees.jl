@@ -1,10 +1,10 @@
 function octree(data::Array,
                ;
                units = uAstro,
-               config = OctreeConfig(length(data), units = units),
+               config = OctreeConfig(length(data)),
                pids = workers(),)
 
-    tree = init_octree(data, config, pids)
+    tree = init_octree(data, units, config, pids)
 
     @info "Spliting domain"
     split_domain(tree)

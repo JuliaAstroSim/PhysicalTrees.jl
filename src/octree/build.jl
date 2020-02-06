@@ -1,4 +1,4 @@
-function create_empty_treenodes(tree::PhysicalOctree, no::Int64, top::Int64, bits::Int64, x::Int64, y::Int64, z::Int64)
+function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64, x::Int64, y::Int64, z::Int64)
     topnodes = tree.topnodes
     treenodes = tree.treenodes
     MaxData = tree.config.MaxData
@@ -41,7 +41,7 @@ function create_empty_treenodes(tree::PhysicalOctree, no::Int64, top::Int64, bit
     end
 end
 
-function init_treenodes(tree::PhysicalOctree)
+function init_treenodes(tree::Octree)
     tree.DomainNodeIndex = zeros(Int64, tree.NTopLeaves)
 
     tree.treenodes = [PhysicalOctreeNode() for i in 1:tree.config.TreeAllocSection]
@@ -70,7 +70,7 @@ end
 
 find_subnode(p::AbstractParticle, Center::AbstractPoint) = find_subnode(p, Center)
 
-function check_inbox(Pos::PVector, Center::PVector, SideLength::Quantity)
+function check_inbox(Pos::PVector, Center::PVector, SideLength::Number)
     half_len = SideLength * 0.5
     if Pos.x < Center.x - half_len || Pos.x > Center.x + half_len ||
         Pos.y < Center.y - half_len || Pos.y > Center.y + half_len ||
@@ -80,15 +80,32 @@ function check_inbox(Pos::PVector, Center::PVector, SideLength::Quantity)
     return true
 end
 
-function insert_data(tree::PhysicalOctree)
+function isclosepoints(len::Quantity, u::Units, threshold::Float64)
+    if ustrip(u, len) < threshold
+        return true
+    else
+        return false
+    end
+end
+
+function isclosepoints(len::Float64, ::Nothing, threshold::Float64)
+    if len < threshold
+        return true
+    else
+        return false
+    end
+end
+
+function insert_data(tree::Octree)
     DomainCorner = tree.extent.Corner
     data = tree.data
     topnodes = tree.topnodes
     treenodes = tree.treenodes
     MaxData = tree.config.MaxData
     epsilon = tree.config.epsilon
+    uLength = getuLength(tree.units)
     for i in 1:length(data)
-        key = peanokey(data[i], DomainCorner, tree.DomainFac, u"kpc")
+        key = peanokey(data[i], DomainCorner, tree.DomainFac, uLength)
 
         no = 1
         while topnodes[no].Daughter >= 0
@@ -147,7 +164,7 @@ function insert_data(tree::PhysicalOctree)
 
                 subnode = find_subnode(data[index], treenodes[tree.nextfree].Center)
 
-                if treenodes[tree.nextfree].SideLength < 1.0e-3 * epsilon
+                if isclosepoints(treenodes[tree.nextfree].SideLength, uLength, 1.0e-3 * epsilon)
                     subnode = trunc(Int64, 8.0 * rand()) + 1
                     data[i].GravCost += 1
                     if subnode >= 9
@@ -175,7 +192,7 @@ function insert_data(tree::PhysicalOctree)
     end
 end
 
-function insert_data_pseudo(tree::PhysicalOctree)
+function insert_data_pseudo(tree::Octree)
     tree.DomainMoment = [DomainNode() for i in 1:tree.NTopLeaves]
 
     MaxData = tree.config.MaxData
@@ -216,7 +233,7 @@ function insert_data_pseudo(tree::PhysicalOctree)
     end
 end
 
-function build(tree::PhysicalOctree)
+function build(tree::Octree)
     bcast(tree, init_treenodes)
     bcast(tree, insert_data)
     bcast(tree, insert_data_pseudo)

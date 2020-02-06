@@ -41,6 +41,9 @@ assign_points(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
 include("testParallel.jl")
 include("testPeano.jl")
 
+# Tree
+include("testUpdate.jl")
+
 # Stability
 include("testEmpty.jl")
 include("testUnits.jl")

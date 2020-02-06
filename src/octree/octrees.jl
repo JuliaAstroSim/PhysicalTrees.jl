@@ -8,37 +8,13 @@ mutable struct Octree2D{T<:Array} <: AbstractOctree2D{T}
     data::T
     topnodes::Array{TopNode}
     nodes::Array{AbstractOctreeNode2D}
-
 end
 
-mutable struct Octree{T<:Array} <: AbstractOctree3D{T}
-    NodeType::UnionAll
-
-    config::OctreeConfig
-
-    extent::AbstractExtent3D
-
-    data::T
-    topnodes::Array{TopNode}
-    nodes::Array{AbstractOctreeNode}
-
-end
-
-mutable struct PhysicalOctree2D{T<:Array} <: AbstractOctree2D{T}
-    NodeType::UnionAll
-
-    config::OctreeConfig
-
-    extent::AbstractExtent2D
-
-    data::T
-    topnodes::Array{TopNode}
-    nodes::Array{AbstractOctreeNode2D}
-end
-
-mutable struct PhysicalOctree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
+mutable struct Octree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
     id::Pair{Int64,Int64}
     isholder::Bool
+
+    units
 
     config::OctreeConfig
     extent::AbstractExtent3D
@@ -48,10 +24,9 @@ mutable struct PhysicalOctree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
     NumTotal::Int64
 
     topnodes::Array{TopNode{I},1}
-    nodes::Array{PhysicalOctreeNode{I},1}
 
     # Tree data
-    DomainFac::Float64
+    DomainFac::Number
     peano_keys::Array{Int128,1}
 
     NTopnodes::Int64
@@ -78,7 +53,7 @@ mutable struct PhysicalOctree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
 
     # Tree
     DomainNodeIndex::Array{Int64,1}
-    treenodes::Array{PhysicalOctreeNode,1}
+    treenodes::Array{OctreeNode,1}
     NTreenodes::Int64
     nextfreenode::Int64
 
@@ -93,11 +68,10 @@ mutable struct PhysicalOctree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
     sendbuffer::Dict{Int64, Array{Any,1}}
     recvbuffer::Dict{Int64, Array{Any,1}}
 end
-PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) = PhysicalOctree(
-    id, isholder,
+Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) = Octree(
+    id, isholder, units,
     config, extent, data, pids, NumTotal,
     Array{TopNode{Int64},1}(),
-    Array{PhysicalOctreeNode{Int64},1}(),
 
     # Tree Data
     0.0,
@@ -127,7 +101,7 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
 
     # Tree
     Array{Int64,1}(),
-    Array{PhysicalOctreeNode,1}(),
+    Array{OctreeNode,1}(),
     0,
     0,
 
@@ -143,12 +117,16 @@ PhysicalOctree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, exte
     Dict{Int64, Array{Any,1}}(),
 )
 
-function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)
-    registry[id] = PhysicalOctree(id, isholder, config, extent, data, NumTotal, pids)
+function init_octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)
+    if isnothing(units)
+        error("Please define units!")
+    else
+        registry[id] = Octree(id, isholder, units, config, extent, data, NumTotal, pids)
+    end
 end
 
-function init_octree(id::Pair{Int64,Int64}, isholder::Bool, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Unitless3D)
-    
+function init_octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Unitless3D)
+    registry[id] = Octree(id, isholder, units, config, extent, data, NumTotal, pids)
 end
 
 function append!()

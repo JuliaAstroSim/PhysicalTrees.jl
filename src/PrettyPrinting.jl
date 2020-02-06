@@ -3,6 +3,7 @@ summary(io::IO, tree::AbstractTree) = print(io, summary(tree))
 function summary(tree::AbstractTree)
     return string(typeof(tree), " defined on worker ", tree.id.first,
              ":\n    Distributed on workers: ", tree.pids,
+             "\n                     units: ", tree.units,
              "\n        Number of topnodes: ", tree.NTopnodes,
              "\n       Number of topleaves: ", tree.NTopLeaves,
              "\n             Domain factor: ", tree.DomainFac,
@@ -30,7 +31,6 @@ function Base.show(io::IO, config::OctreeConfig)
         "\n                 Extent margin: ", config.ExtentMargin,
         "\n                 3D Peano bits: ", config.PeanoBits3D,
         "\n                 2D Peano bits: ", config.PeanoBits2D,
-        "\n                         units: ", config.units,
         "\n"
     )
 end
