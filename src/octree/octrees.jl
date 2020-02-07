@@ -108,7 +108,7 @@ Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, exten
     Array{DomainNode,1}(),
     zeros(Int64, config.MaxData + config.MaxTopnode),
     zeros(Int64, config.MaxData),
-    [ExtNode() for i in 1:config.MaxTreenode],
+    [ExtNode(units) for i in 1:config.MaxTreenode],
     0,
 
     Array{DomainNode,1}(),
@@ -126,7 +126,7 @@ function init_octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::Octre
 end
 
 function init_octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Unitless3D)
-    registry[id] = Octree(id, isholder, units, config, extent, data, NumTotal, pids)
+    registry[id] = Octree(id, isholder, nothing, config, extent, data, NumTotal, pids)
 end
 
 function append!()

@@ -30,8 +30,10 @@ mutable struct OctreeNode2D{I<:Integer} <: AbstractOctreeNode2D{I}
     Sibling::I
     BitFlag::I
 end
+
 OctreeNode2D() = OctreeNode2D(1, 0, [0,0,0,0,0,0,0,0], PVector(u"kpc"), 0.0u"kpc", 0.0u"Msun",
                         PVector(u"kpc"), 0.0u"kpc", Array{Int64,1}(), 0.0u"Msun", PVector(u"kpc"), true, 0, 0, 0, 0)
+
 
 mutable struct OctreeNode{I<:Integer} <: AbstractOctreeNode{I}
     ID::I
@@ -53,20 +55,39 @@ mutable struct OctreeNode{I<:Integer} <: AbstractOctreeNode{I}
     Sibling::I
     BitFlag::I
 end
-OctreeNode() = OctreeNode(1, 0, [0,0,0,0,0,0,0,0], PVector(u"kpc"), 0.0u"kpc", 0.0u"Msun",
-                        PVector(u"kpc"), 0.0u"kpc", Array{Int64,1}(), 0.0u"Msun", PVector(u"kpc"), true, 0, 0, 0, 0)
+
+OctreeNode(::Nothing) = OctreeNode(1, 0, [0,0,0,0,0,0,0,0], PVector(), 0.0, 0.0,
+                        PVector(), 0.0, Array{Int64,1}(), 0.0, PVector(), true, 0, 0, 0, 0)
+
+function OctreeNode(u::Array)
+    uLength = getuLength(u)
+    uMass = getuLength(u)
+    return OctreeNode(1, 0, [0,0,0,0,0,0,0,0], PVector(uLength), 0.0uLength, 0.0uMass,
+                        PVector(uLength), 0.0uLength, Array{Int64,1}(), 0.0uMass, PVector(uLength), true, 0, 0, 0, 0)
+end
+
 
 mutable struct DomainNode
     MassCenter::AbstractPoint
     Vel::AbstractPoint
-    Mass::Quantity
-    MaxSoft::Quantity
+    Mass::Number
+    MaxSoft::Number
     BitFlag::Int64
 end
-DomainNode() = DomainNode(PVector(u"kpc"), PVector(u"kpc/Gyr"), 0.0u"Msun", 0.0u"kpc",0)
+
+DomainNode(::Nothing) = DomainNode(PVector(), PVector(), 0.0, 0.0, 0)
+
+function DomainNode(u::Array)
+    uLength = getuLength(u)
+    uTime = getuTime(u)
+    uMass = getuLength(u)
+    DomainNode(PVector(uLength), PVector(uLength / uTime), 0.0uMass, 0.0uLength,0)
+end
+
 
 mutable struct ExtNode
-    hmax::Quantity
+    hmax::Number
     vs::AbstractPoint  # Center-of-mass velocity
 end
-ExtNode() = ExtNode(0.0u"kpc", PVector(u"kpc/Gyr"))
+ExtNode(::Nothing) = ExtNode(0.0, PVector())
+ExtNode(u::Array) = ExtNode(0.0 * getuLength(u), PVector(getuLength(u) / getuTime(u)))

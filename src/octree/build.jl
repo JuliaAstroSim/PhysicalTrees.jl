@@ -26,7 +26,7 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
 
                     if tree.nextfreenode >= length(treenodes) - 8
                         if length(treenodes) <= tree.config.MaxTreenode
-                            append!(treenodes, [PhysicalOctreeNode() for i in 1:tree.config.TreeAllocSection])
+                            append!(treenodes, [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection])
                         else
                             error("Running out of tree nodes in creating empty nodes, please increase MaxTreenode in Config")
                         end
@@ -44,7 +44,7 @@ end
 function init_treenodes(tree::Octree)
     tree.DomainNodeIndex = zeros(Int64, tree.NTopLeaves)
 
-    tree.treenodes = [PhysicalOctreeNode() for i in 1:tree.config.TreeAllocSection]
+    tree.treenodes = [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection]
     tree.treenodes[1].Center = tree.extent.Center
     tree.treenodes[1].SideLength = tree.extent.SideLength
 
@@ -68,7 +68,7 @@ function find_subnode(Pos::PVector, Center::PVector)
     return subnode
 end
 
-find_subnode(p::AbstractParticle, Center::AbstractPoint) = find_subnode(p, Center)
+find_subnode(p::AbstractParticle, Center::AbstractPoint) = find_subnode(p.Pos, Center)
 
 function check_inbox(Pos::PVector, Center::PVector, SideLength::Number)
     half_len = SideLength * 0.5
@@ -105,7 +105,7 @@ function insert_data(tree::Octree)
     epsilon = tree.config.epsilon
     uLength = getuLength(tree.units)
     for i in 1:length(data)
-        key = peanokey(data[i], DomainCorner, tree.DomainFac, uLength)
+        key = peanokey(data[i], DomainCorner, tree.DomainFac)
 
         no = 1
         while topnodes[no].Daughter >= 0
@@ -182,7 +182,7 @@ function insert_data(tree::Octree)
 
                 if tree.nextfreenode >= length(treenodes) - 8
                     if length(treenodes) <= tree.config.MaxTreenode
-                        append!(treenodes, [PhysicalOctreeNode() for i in 1:tree.config.TreeAllocSection])
+                        append!(treenodes, [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection])
                     else
                         error("Running out of tree nodes in creating empty nodes, please increase MaxTreenode in Config")
                     end
@@ -193,7 +193,7 @@ function insert_data(tree::Octree)
 end
 
 function insert_data_pseudo(tree::Octree)
-    tree.DomainMoment = [DomainNode() for i in 1:tree.NTopLeaves]
+    tree.DomainMoment = [DomainNode(tree.units) for i in 1:tree.NTopLeaves]
 
     MaxData = tree.config.MaxData
     MaxTreenode = tree.config.MaxTreenode

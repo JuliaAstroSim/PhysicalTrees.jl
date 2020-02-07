@@ -40,10 +40,22 @@ assign_points(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
 
 #! Test single first, since some error info could not be fetched from remote
 tree1 = octree(AstroPVectorData, pids = [1])
-t1 = octree(UnitlessPVectorData, pids = [1])
+println(tree1)
 
-tree = octree(AstroPVectorData)
-t = octree(UnitlessPVectorData)
+t1 = octree(UnitlessPVectorData, pids = [1])
+println(t1)
+
+tree2 = octree(AstroParticleData, pids = [1])
+println(tree2)
+
+t2 = octree(UnitlessParticleData, pids = [1])
+println(t2)
+
+tree = octree(AstroParticleData)
+println(tree)
+
+t = octree(UnitlessParticleData)
+println(t)
 
 #=
 @everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].data
