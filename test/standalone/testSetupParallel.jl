@@ -51,11 +51,15 @@ println(tree2)
 t2 = octree(UnitlessParticleData, pids = [1])
 println(t2)
 
-tree = octree(AstroParticleData)
-println(tree)
+tree3 = octree(AstroParticleData)
+println(tree3)
 
-t = octree(UnitlessParticleData)
-println(t)
+t3 = octree(UnitlessParticleData)
+println(t3)
+
+d = randn_pvector(10)
+t4 = octree(d, pids = [1])
+t5 = octree(d)
 
 #=
 @everywhere workers() @show PhysicalTrees.registry[Pair(1,1)].data

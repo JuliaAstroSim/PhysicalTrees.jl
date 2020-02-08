@@ -139,9 +139,9 @@ function insert_data(tree::Octree)
             else
                 # We try to insert into a leaf with a single particle
                 # Need to generate a new internal node at this point
-                treenodes[parent - MaxData].DaughterID[subnode] = tree.nextfree + MaxData
+                treenodes[parent - MaxData].DaughterID[subnode] = tree.nextfreenode + MaxData
 
-                treenodes[tree.nextfree].SideLength = 0.5 * treenodes[parent - MaxData].SideLength
+                treenodes[tree.nextfreenode].SideLength = 0.5 * treenodes[parent - MaxData].SideLength
                 lenhalf = 0.25 * treenodes[parent - MaxData].SideLength
 
                 if (subnode - 1) & 1 > 0
@@ -162,23 +162,23 @@ function insert_data(tree::Octree)
                     centerZ = treenodes[parent - MaxData].Center.z - lenhalf
                 end
 
-                subnode = find_subnode(data[index], treenodes[tree.nextfree].Center)
+                subnode = find_subnode(data[index], treenodes[tree.nextfreenode].Center)
 
-                if isclosepoints(treenodes[tree.nextfree].SideLength, uLength, 1.0e-3 * epsilon)
+                if isclosepoints(treenodes[tree.nextfreenode].SideLength, uLength, 1.0e-3 * epsilon)
                     subnode = trunc(Int64, 8.0 * rand()) + 1
-                    data[i].GravCost += 1
+                    #data[i].GravCost += 1
                     if subnode >= 9
                         subnode = 8
                     end
                 end
 
-                treenodes[tree.nextfree].DaughterID[subnode] = index
+                treenodes[tree.nextfreenode].DaughterID[subnode] = index
 
                 # Resume trying to insert the new particle at the newly created internal node
-                index = tree.nextfree + MaxData
+                index = tree.nextfreenode + MaxData
 
-                tree.NodeCount += 1
-                tree.nextfree += 1
+                tree.NTreenodes += 1
+                tree.nextfreenode += 1
 
                 if tree.nextfreenode >= length(treenodes) - 8
                     if length(treenodes) <= tree.config.MaxTreenode
