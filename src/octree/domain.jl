@@ -1,3 +1,10 @@
+function sortpeano(tree::AbstractTree)
+    d = Pair.(tree.data, tree.peano_keys)
+    sort!(d, by = x -> x.second)
+    tree.data = [p.first for p in d]
+    tree.peano_keys = [p.second for p in d]
+end
+
 function init_peano(tree::Octree)
     tree.DomainFac = (1 << tree.config.PeanoBits3D) / tree.extent.SideLength
     tree.peano_keys = peanokey(tree.data, tree.extent.Corner, tree.DomainFac, tree.config.PeanoBits3D)
@@ -38,7 +45,7 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
         for p in topnodes[node].Pstart : topnodes[node].Pstart + topnodes[node].Count - 1
             bin = floor(Int64, (tree.peano_keys[p] - startkey) / (topnodes[node].Size / 8))
             if bin < 0 || bin > 7
-                error("something odd has happened here. bin = ", bin)
+                error("something odd has happened here. bin = ", bin, ", startkey = ", startkey, " p = ", p, )
             end
 
             sub = topnodes[node].Daughter + bin

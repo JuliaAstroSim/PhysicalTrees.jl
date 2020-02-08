@@ -260,7 +260,3 @@ mssort!(a::Array{T,1}; lim_ms::Int64=16, lim_hl::Int64=4, rat::Float64=0.25) whe
     _mssort!(a, lim_ms, lim_hl, rat)
 mssort!(a::Array{T,1}; lim_ms::Int64=64, lim_hl::Int64=8, rat::Float64=0.125) where {T<:AbstractPoint3D} =
     _mssort!(a, lim_ms, lim_hl, rat)
-
-function sortpeano(tree::AbstractTree)
-
-end
