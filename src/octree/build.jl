@@ -2,6 +2,15 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
     topnodes = tree.topnodes
     treenodes = tree.treenodes
     MaxData = tree.config.MaxData
+
+    if tree.nextfreenode >= length(treenodes) - 8
+        if length(treenodes) <= tree.config.MaxTreenode
+            append!(treenodes, [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection])
+        else
+            error("Running out of tree nodes in creating empty nodes, please increase MaxTreenode in Config")
+        end
+    end
+
     if topnodes[top].Daughter >= 0
         for i = 0:1
             for j = 0:1
@@ -13,8 +22,8 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
                     treenodes[tree.nextfreenode].SideLength = 0.5 * treenodes[no].SideLength
 
                     treenodes[tree.nextfreenode].Center = treenodes[no].Center + PVector((2 * i - 1) * 0.25 * treenodes[no].SideLength,
-                                                                                                    (2 * j - 1) * 0.25 * treenodes[no].SideLength,
-                                                                                                    (2 * k - 1) * 0.25 * treenodes[no].SideLength)
+                                                                                         (2 * j - 1) * 0.25 * treenodes[no].SideLength,
+                                                                                         (2 * k - 1) * 0.25 * treenodes[no].SideLength)
 
                     if topnodes[topnodes[top].Daughter + sub].Daughter == -1
                         # this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree
@@ -23,14 +32,6 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
 
                     tree.NTreenodes += 1
                     tree.nextfreenode += 1
-
-                    if tree.nextfreenode >= length(treenodes) - 8
-                        if length(treenodes) <= tree.config.MaxTreenode
-                            append!(treenodes, [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection])
-                        else
-                            error("Running out of tree nodes in creating empty nodes, please increase MaxTreenode in Config")
-                        end
-                    end
 
                     create_empty_treenodes(tree,
                                             tree.nextfreenode - 1, tree.topnodes[top].Daughter + sub,
@@ -161,6 +162,8 @@ function insert_data(tree::Octree)
                 else
                     centerZ = treenodes[parent - MaxData].Center.z - lenhalf
                 end
+
+                treenodes[tree.nextfreenode].Center = PVector(centerX, centerY, centerZ)
 
                 subnode = find_subnode(data[index], treenodes[tree.nextfreenode].Center)
 

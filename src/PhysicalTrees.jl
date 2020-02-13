@@ -21,30 +21,27 @@ import ParallelOperations: sendto, getfrom, bcast, scatter, reduce, gather, allg
 
 
 export
+    AbstractTree, AbstractTree2D, AbstractTree3D,
+    AbstractOctree2D, AbstractOctree3D,
+    AbstractOctreeNode, AbstractOctreeNode2D, AbstractOctreeNode3D,
     # Base
     +, -, show, real, iterate, length, sum,
 
     # Parallel
     procs, sendto, getfrom, bcast, scatter, reduce, gather, allgather, allreduce, allsum,
 
-    # Traits
-    treetype,
-    Physical2D, Physical3D,
-    Unitless2D, Unitless3D,
 
     # Configs
     OctreeConfig,
 
     # Tree node
     OctreeNode, OctreeNode2D,
-    PhysicalOctreeNode, PhysicalOctreeNode2D,
     TopNode,
     DomainNode,
     ExtNode,
 
     # Tree
     Octree, Octree2D,
-    PhysicalOctree, PhysicalOctree2D,
 
     # Peano
     peanokey,
@@ -72,7 +69,6 @@ export
     @inline real(p::T) where T <: AbstractOctreeNode = p
     @inline length(p::T) where T <: AbstractOctreeNode = 1
 
-    include("Traits.jl")
     include("Parallel.jl")
     
     include("octree/config.jl")

@@ -13,9 +13,6 @@ getpos(p::AbstractParticle) = p.Pos
 getvel(p::AbstractParticle, ::Nothing) = p.Vel
 getvel(p::AbstractParticle, u::Units) = uconvert(u, p.Vel)
 
-getuVel(::Nothing) = nothing
-getuVel(units::Array) = units[1] / units[2]
-
 function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, father::Int64)
     MaxData = tree.config.MaxData
     MaxTreenode = tree.config.MaxTreenode

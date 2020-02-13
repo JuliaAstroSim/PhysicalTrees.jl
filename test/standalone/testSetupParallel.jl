@@ -13,28 +13,28 @@ AstroPVectorData = [PVector(1.0, 1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, -1.0, u"
                     PVector(0.0, 0.0, -1.0, u"kpc"), PVector(-1.0, 0.0, 0.0, u"kpc")]
 
 AstroParticleData = [Star(uAstro) for i in 1:6]
-assign_points(AstroParticleData, :Pos, AstroPVectorData)
+assign_particles(AstroParticleData, :Pos, AstroPVectorData)
 
 AstroPVectorData2D = [PVector(1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, u"kpc"),
                       PVector(1.0, 0.0, u"kpc"), PVector(-1.0, 0.0, u"kpc"),
                       PVector(0.0, 0.0, u"kpc"), PVector(-1.0, 1.0, u"kpc")]
 
 AstroParticleData2D = [Star2D(uAstro) for i in 1:6]
-assign_points(AstroParticleData2D, :Pos, AstroPVectorData2D)
+assign_particles(AstroParticleData2D, :Pos, AstroPVectorData2D)
 
 UnitlessPVectorData = [PVector(1.0, 1.0, 1.0), PVector(-1.0, -1.0, -1.0),
                        PVector(1.0, 0.0, -1.0), PVector(-1.0, 0.0, 1.0),
                        PVector(0.0, 0.0, -1.0), PVector(-1.0, 0.0, 0.0)]
 
 UnitlessParticleData = [Massless() for i in 1:6]
-assign_points(UnitlessParticleData, :Pos, UnitlessPVectorData)
+assign_particles(UnitlessParticleData, :Pos, UnitlessPVectorData)
 
 UnitlessPVectorData2D = [PVector(1.0, 1.0), PVector(-1.0, -1.0),
                          PVector(1.0, 0.0), PVector(-1.0, 0.0),
                          PVector(0.0, 0.0), PVector(-1.0, 1.0)]
 
 UnitlessParticleData2D = [Massless2D() for i in 1:6]
-assign_points(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
+assign_particles(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
 
 @info "Building tree"
 

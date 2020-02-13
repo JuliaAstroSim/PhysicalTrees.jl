@@ -44,12 +44,12 @@ function init_octree(data::Array, units, config::OctreeConfig, pids::Array{Int64
     id = next_treeid()
     e = extent(data)
     e.SideLength *= config.ExtentMargin
-    type = treetype(data) # to avoid empty arrays
+    type = datadimension(data) # to avoid empty arrays
     NumTotal = length(data)
 
     @sync @distributed for i in 1:length(pids)
         d = split_data(data, i, length(pids))
-        @everywhere pids[i] init_octree($id, false, $units, $config, $e, $d, $NumTotal, $pids, $type)
+        Distributed.remotecall_eval(PhysicalTrees, pids[i], :(init_octree($id, false, $units, $config, $e, $d, $NumTotal, $pids, $type)))
     end
 
     if haskey(registry, id) # This holder is included in pids
@@ -62,7 +62,7 @@ function init_octree(data::Array, units, config::OctreeConfig, pids::Array{Int64
 end
 
 function unregister_octree(tree::AbstractTree)
-    @everywhere tree.pids pop!(registry, $(tree.id))
+    Distributed.remotecall_eval(PhysicalTrees, tree.pids, :(pop!(registry, $(tree.id))))
     if haskey(registry, tree.id) # This holder is included in pids
         pop!(registry, tree.id)
     end

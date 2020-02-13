@@ -1,6 +1,4 @@
 const registry=Dict{Pair{Int64, Int64},Any}()
-const sendlist=Dict()
-const receivelist=Dict()
 
 let DID::Int = 1
     global next_treeid
