@@ -29,6 +29,7 @@ export
 
     # Parallel
     procs, sendto, getfrom, bcast, scatter, reduce, gather, allgather, allreduce, allsum,
+    send_buffer,
 
 
     # Configs

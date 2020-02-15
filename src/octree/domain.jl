@@ -325,7 +325,7 @@ function fill_domain_buffer(tree::Octree)
     deleteat!(tree.peano_keys, tree.DeleteIDs)
 end
 
-function send_domain_buffer(tree::Octree)
+function send_buffer(tree::Octree)
     # Reduce communication blocking
     # Move myid to last
     src = myid()
@@ -387,6 +387,6 @@ function split_domain(tree::Octree)
     bcast(tree, shift_split)
 
     @sync bcast(tree, fill_domain_buffer)
-    @sync bcast(tree, send_domain_buffer)
+    @sync bcast(tree, send_buffer)
     @sync bcast(tree, clear_domain_buffer)
 end
