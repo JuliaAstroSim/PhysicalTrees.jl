@@ -48,8 +48,12 @@ include("testPeano.jl")
 include("testUpdate.jl")
 
 # Stability
+include("testEdge.jl")
 include("testEmpty.jl")
 include("testUnits.jl")
+include("testCloser.jl")
+
+include("testRebuild.jl")
 
 @testset "Unregister" begin
     id = tree.id

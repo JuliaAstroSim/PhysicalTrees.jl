@@ -3,7 +3,8 @@ function extent(tree::AbstractTree)
         return extent(tree.data)
     else
         if tree.isholder
-            return reduce(extent, gather(tree, extent, :data))
+            d = reduce(vcat, gather(tree, :data))
+            return extent(d)
         else
             return extent(tree.data)
         end
