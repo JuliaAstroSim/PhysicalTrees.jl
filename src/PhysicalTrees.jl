@@ -49,7 +49,7 @@ export
 
     # Setup
     octree,
-    rebuild,
+    rebuild, update_node_len,
     init_octree, split_data,
     unregister_octree
 

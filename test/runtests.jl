@@ -37,8 +37,8 @@ UnitlessPVectorData2D = [PVector(1.0, 1.0), PVector(-1.0, -1.0),
 UnitlessParticleData2D = [Massless2D() for i in 1:6]
 assign_particles(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
 
-AstroPVectorTree = octree(AstroPVectorData, pids = pids)
-tree = AstroPVectorTree
+AstroParticleTree = octree(AstroParticleData, pids = pids)
+tree = AstroParticleTree
 
 # Core
 include("testParallel.jl")

@@ -278,3 +278,87 @@ function update(tree::AbstractTree)
     bcast(tree, update_pseudo_data)
     bcast(tree, flag_local_treenodes)
 end
+
+function update_node_len_local(tree::Octree)
+    treenodes = tree.treenodes
+    MaxData = tree.config.MaxData
+    for i in 1:tree.NumLocal
+        no = tree.Fathers[i]
+        dist = tree.data[i].Pos - treenodes[no - MaxData].MassCenter
+        dist_max = max(abs(dist.x), abs(dist.y), abs(dist.z))
+
+        if 2.0 * dist_max > treenodes[no - MaxData].SideLength
+            treenodes[no - MaxData].SideLength = 2.0 * dist_max
+            p = treenodes[no - MaxData].Father
+
+            while p > 0
+                dist_max = treenodes[p - MaxData].MassCenter.x - treenodes[no - MaxData].MassCenter.x
+                if ustrip(dist_max) < 0.0
+                    dist_max = - dist_max
+                end
+                dist_max = 2.0 * dist_max + treenodes[no - MaxData].SideLength
+
+                if 0.999999 * dist_max > treenodes[no - MaxData].SideLength
+                    treenodes[p - MaxData].SideLength = dist_max
+                    no = p
+                    p = treenodes[p - MaxData].Father
+                else
+                    break
+                end
+            end
+        end
+    end
+
+    tree.DomainNodeLen = [treenodes[tree.DomainNodeIndex[i] - MaxData].SideLength for i in tree.DomainMyStart:tree.DomainMyEnd]
+end
+
+function update_node_len_toptree(tree::Octree)
+    treenodes = tree.treenodes
+    MaxData = tree.config.MaxData
+    for i in 1:tree.NTopLeaves
+        if i < tree.DomainMyStart || i > tree.DomainMyEnd
+            no = tree.DomainNodeIndex[i]
+
+            if treenodes[no - MaxData].SideLength < tree.DomainNodeLen[i]
+                treenodes[no - MaxData].SideLength = tree.DomainNodeLen[i]
+            end
+
+            p = treenodes[no - MaxData].Father
+
+            while p > 0
+                dist_max = treenodes[p - MaxData].MassCenter.x - treenodes[no - MaxData].MassCenter.x
+                if ustrip(dist_max) < 0.0
+                    dist_max = - dist_max
+                end
+                dist_max = 2.0 * dist_max + treenodes[no - MaxData].SideLength
+
+                if 0.999999 * dist_max > treenodes[no - MaxData].SideLength
+                    treenodes[p - MaxData].SideLength = dist_max
+                    no = p
+                    p = treenodes[p - MaxData].Father
+                else
+                    break
+                end
+            end
+        end
+    end
+end
+
+function update_node_len(tree::AbstractTree)
+    @info "Updating tree node length"
+    bcast(tree, update_node_len_local)
+
+    DomainNodeLen = reduce(vcat, gather(tree, :DomainNodeLen))
+    bcast(tree, :DomainNodeLen, DomainNodeLen)
+
+    bcast(tree, update_node_len_toptree)
+
+
+    bcast(tree, fill_pseudo_buffer)
+
+    # send pseudo buffer
+    tree.DomainMoment = reduce(vcat, gather(tree, :MomentsToSend))
+    bcast(tree, :DomainMoment, tree.DomainMoment)
+
+    bcast(tree, update_pseudo_data)
+end

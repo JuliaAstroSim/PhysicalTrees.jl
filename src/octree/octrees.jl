@@ -63,6 +63,8 @@ mutable struct Octree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
     ExtNodes::Array{ExtNode,1}
     last::Int64
 
+    DomainNodeLen::Array{Number, 1}
+
     MomentsToSend::Array{DomainNode,1}
 
     sendbuffer::Dict{Int64, Array{Any,1}}
@@ -110,6 +112,8 @@ Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, exten
     zeros(Int64, config.MaxData),
     [ExtNode(units) for i in 1:config.MaxTreenode],
     0,
+
+    Array{Number, 1}(),
 
     Array{DomainNode,1}(),
 
