@@ -1,10 +1,16 @@
 function extent(tree::AbstractTree)
-    if length(tree.pids) == 1
-        return extent(tree.data)
+    if tree.isholder
+        d = gather(tree, extent, :data)
+        e = Array{AbstractExtent, 1}()
+        for p in d
+            if !isnothing(p)
+                push!(e, p)
+            end
+        end
+        return extent(e)
     else
-        if tree.isholder
-            d = reduce(vcat, gather(tree, :data))
-            return extent(d)
+        if isempty(tree.data)
+            return nothing
         else
             return extent(tree.data)
         end
