@@ -78,7 +78,7 @@ function split_data(data::Array, i::Int64, N::Int64)
     end
 end
 
-function extent(tree::Octree)
+function extent(tree::AbstractTree)
     if isempty(tree.data)
         return nothing
     else
@@ -86,7 +86,7 @@ function extent(tree::Octree)
     end
 end
 
-function global_extent(tree::Octree)
+function global_extent(tree::AbstractTree)
     es = gather(tree, extent)
     es = filter(!isnothing, es) # Now it's an array of union{Nothing, Extent}
 
@@ -96,4 +96,15 @@ function global_extent(tree::Octree)
     end
     bcast(tree, :extent, e)
     tree.extent = e
+end
+
+function send_buffer(tree::AbstractTree)
+    # Reduce communication blocking
+    # Move myid to last
+    src = myid()
+    circpids = circshift(tree.pids, length(tree.pids) - findfirst(x->x==src, tree.pids))
+
+    for target in circpids[1:end-1]
+        tree.recvbuffer[target] = Distributed.remotecall_eval(PhysicalTrees, target, :(registry[$(tree.id)].sendbuffer[$src]))
+    end
 end

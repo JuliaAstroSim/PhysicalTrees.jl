@@ -325,17 +325,6 @@ function fill_domain_buffer(tree::Octree)
     deleteat!(tree.peano_keys, tree.DeleteIDs)
 end
 
-function send_buffer(tree::Octree)
-    # Reduce communication blocking
-    # Move myid to last
-    src = myid()
-    circpids = circshift(tree.pids, length(tree.pids) - findfirst(x->x==src, tree.pids))
-
-    for target in circpids[1:end-1]
-        tree.recvbuffer[target] = Distributed.remotecall_eval(PhysicalTrees, target, :(registry[$(tree.id)].sendbuffer[$src]))
-    end
-end
-
 function clear_domain_buffer(tree::Octree)
     data = tree.data
     peano_keys = tree.peano_keys

@@ -43,6 +43,7 @@ export
 
     # Tree
     Octree, Octree2D,
+    extent, global_extent,
 
     # Peano
     peanokey,
