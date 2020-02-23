@@ -77,11 +77,11 @@ version = "0.1.0"
 
 [[PhysicalParticles]]
 deps = ["DocStringExtensions", "LinearAlgebra", "NearestNeighbors", "Statistics", "Test", "Unitful", "UnitfulAstro"]
-git-tree-sha1 = "7ddbc3ba1443fde804ae70a2b187c184e343356a"
+git-tree-sha1 = "da8eadca5ca08132bb00feec363c468714180a8c"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaAstroSim/PhysicalParticles.jl"
 uuid = "78724250-4eb2-11e9-0f34-13a7aab864c5"
-version = "1.0.2"
+version = "1.0.3"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
