@@ -27,6 +27,7 @@ reduce(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = red
 
 gather(tree::AbstractTree, expr, mod::Module = PhysicalTrees) = gather(tree.pids, :(registry[$(tree.id)].$expr), mod)
 gather(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = gather(f, tree.pids, :(registry[$(tree.id)].$expr), mod)
+gather(tree::AbstractTree, f::Function, mod::Module = PhysicalTrees) = gather(f, tree.pids, :(registry[$(tree.id)]), mod)
 
 function allgather(tree::AbstractTree, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
     data = gather(tree, src_expr, mod)
