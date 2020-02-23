@@ -77,3 +77,23 @@ function split_data(data::Array, i::Int64, N::Int64)
         end
     end
 end
+
+function extent(tree::Octree)
+    if isempty(tree.data)
+        return nothing
+    else
+        return extent(tree.data)
+    end
+end
+
+function global_extent(tree::Octree)
+    es = gather(tree, extent)
+    es = filter(!isnothing, es) # Now it's an array of union{Nothing, Extent}
+
+    e = es[1]
+    for i in es
+        e = extent(e, i)
+    end
+    bcast(tree, :extent, e)
+    tree.extent = e
+end

@@ -19,10 +19,7 @@ function octree(data::Array,
 end
 
 function rebuild(tree::Octree)
-    e = gather(tree, extent, :data)
-    e.SideLength *= tree.config.ExtentMargin
-    bcast(tree, :extent, e)
-    tree.extent = e
+    global_extent(tree)
 
     @info "Spliting domain"
     split_domain(tree)
