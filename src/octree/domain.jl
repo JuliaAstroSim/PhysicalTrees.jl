@@ -66,6 +66,8 @@ end
 
 function count_leaves(tree::Octree)
     topnodes = tree.topnodes
+    tree.StartKeys = Array{Int128,1}()
+    tree.Counts = Array{Int128,1}()
     StartKeys = tree.StartKeys
     Counts = tree.Counts
     for i in 1:tree.NTopnodes
