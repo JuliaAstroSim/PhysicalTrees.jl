@@ -64,8 +64,11 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
                 # check if we have a sibling on the same level
                 jj = 0
                 pp = 0
-                for jj = (j+1) : 8
-                    pp = suns[jj]
+                for jjj = (j+1) : 9
+                    jj = jjj
+                    if jj <= 8
+                        pp = suns[jj]
+                    end
                     if pp > 0
                         break
                     end
