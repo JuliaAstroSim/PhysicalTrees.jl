@@ -86,7 +86,8 @@ function split_topnode_local(tree::Octree)
 end
 
 function key_sort_bcast(tree::Octree)
-    key_counts = sortslices([tree.StartKeys tree.Counts], dims=1)
+    SC = [tree.StartKeys tree.Counts]
+    key_counts = sortslices(SC, dims=1)
     tree.StartKeys = key_counts[:, 1]
     tree.Counts = key_counts[:, 2]
 
@@ -377,7 +378,7 @@ function split_domain(tree::Octree)
 
     bcast(tree, shift_split)
 
-    @sync bcast(tree, fill_domain_buffer)
-    @sync bcast(tree, send_buffer)
-    @sync bcast(tree, clear_domain_buffer)
+    bcast(tree, fill_domain_buffer)
+    bcast(tree, send_buffer)
+    bcast(tree, clear_domain_buffer)
 end

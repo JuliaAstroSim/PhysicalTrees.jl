@@ -19,7 +19,7 @@ function init_octree(data::Array, units, config::OctreeConfig, pids::Array{Int64
     return registry[id]
 end
 
-function unregister_octree(tree::AbstractTree)
+function unregister(tree::AbstractTree)
     Distributed.remotecall_eval(PhysicalTrees, tree.pids, :(pop!(registry, $(tree.id))))
     if haskey(registry, tree.id) # This holder is included in pids
         pop!(registry, tree.id)

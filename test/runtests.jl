@@ -57,7 +57,7 @@ include("testRebuild.jl")
 
 @testset "Unregister" begin
     id = tree.id
-    unregister_octree(tree)
+    unregister(tree)
     @test !haskey(PhysicalTrees.registry, id)
 end
 

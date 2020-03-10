@@ -8,8 +8,6 @@
     @test sum(gather(tree, :last)) == 4
 
     bcast(tree, p->(p.last = 2))
-    @test sum(bcast(tree, x->x-1, :last)) == 4
-
     @test sum(gather(tree, x->x-1, :last)) == 4
 
     scatter(tree, [1, 2, 3, 4], :last)

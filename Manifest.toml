@@ -69,7 +69,7 @@ version = "1.1.0"
 
 [[ParallelOperations]]
 deps = ["Distributed", "Test"]
-git-tree-sha1 = "9f4fad4d41cdd0fb1d36cca7fd440c83ae87fb29"
+git-tree-sha1 = "eec47ec1b0274a5dde66d70b38d42e3d33350e87"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaAstroSim/ParallelOperations.jl"
 uuid = "09c1cff2-b94d-4c31-85a1-721512e21c63"

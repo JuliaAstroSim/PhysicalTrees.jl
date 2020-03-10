@@ -52,7 +52,8 @@ export
     octree,
     rebuild, update_node_len,
     init_octree, split_data,
-    unregister_octree
+    redistribute,
+    unregister
 
     abstract type AbstractTree{T} end
     abstract type AbstractTree2D{T} <: AbstractTree{T} end
