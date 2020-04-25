@@ -69,6 +69,8 @@ mutable struct Octree{T<:Array, I<:Integer} <: AbstractOctree3D{T}
 
     sendbuffer::Dict{Int64, Array{Any,1}}
     recvbuffer::Dict{Int64, Array{Any,1}}
+
+    timers::Dict{String, UInt64}
 end
 Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) = Octree(
     id, isholder, units,
@@ -119,6 +121,13 @@ Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, exten
 
     Dict{Int64, Array{Any,1}}(),
     Dict{Int64, Array{Any,1}}(),
+
+    Dict(
+        "tree_init"   => UInt64(0),
+        "tree_domain" => UInt64(0),
+        "tree_build"  => UInt64(0),
+        "tree_update" => UInt64(0),
+    )
 )
 
 function init_octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)

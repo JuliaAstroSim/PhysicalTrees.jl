@@ -3,32 +3,39 @@ function octree(data::Array,
                units = uAstro,
                config = OctreeConfig(length(data)),
                pids = workers(),)
-
+    t = time_ns()
     tree = init_octree(data, units, config, pids)
+    t = time_ns() - t
+    tree.timers["tree_init"] = t
 
-    @info "Spliting domain"
+    begin_timer(tree, "tree_domain")
     split_domain(tree)
-
-    @info "Building tree"
+    end_timer(tree, "tree_domain")
+    
+    begin_timer(tree, "tree_build")
     build(tree)
-
-    @info "Updating tree"
+    end_timer(tree, "tree_build")
+    
+    begin_timer(tree, "tree_update")
     update(tree)
+    end_timer(tree, "tree_update")
 
     return tree
 end
 
 function rebuild(tree::Octree)
+    begin_timer(tree, "tree_domain")
     global_extent(tree)
-
-    @info "Spliting domain"
     split_domain(tree)
-
-    @info "Building tree"
+    end_timer(tree, "tree_domain")
+    
+    begin_timer(tree, "tree_build")
     build(tree)
-
-    @info "Updating tree"
+    end_timer(tree, "tree_build")
+    
+    begin_timer(tree, "tree_update")
     update(tree)
+    end_timer(tree, "tree_update")
 end
 
 function update_DomainTask_pids(tree::Octree, pids::Array{Int64,N}, newid::Pair{Int64, Int64}) where N

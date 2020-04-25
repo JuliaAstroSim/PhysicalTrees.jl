@@ -348,7 +348,6 @@ function update_node_len_toptree(tree::Octree)
 end
 
 function update_node_len(tree::AbstractTree)
-    @info "Updating tree node length"
     bcast(tree, update_node_len_local)
 
     DomainNodeLen = reduce(vcat, gather(tree, :DomainNodeLen))

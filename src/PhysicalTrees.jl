@@ -74,6 +74,7 @@ export
     @inline length(p::T) where T <: AbstractOctreeNode = 1
 
     include("Parallel.jl")
+    include("Timing.jl")
     
     include("octree_sparse/config.jl")
     include("octree_sparse/peano.jl")
