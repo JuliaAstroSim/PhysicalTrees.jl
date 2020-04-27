@@ -123,7 +123,6 @@ Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, exten
     Dict{Int64, Array{Any,1}}(),
 
     Dict(
-        "tree_init"   => UInt64(0),
         "tree_domain" => UInt64(0),
         "tree_build"  => UInt64(0),
         "tree_update" => UInt64(0),

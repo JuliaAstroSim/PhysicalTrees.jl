@@ -3,10 +3,7 @@ function octree(data::Array,
                units = uAstro,
                config = OctreeConfig(length(data)),
                pids = workers(),)
-    t = time_ns()
     tree = init_octree(data, units, config, pids)
-    t = time_ns() - t
-    tree.timers["tree_init"] = t
 
     begin_timer(tree, "tree_domain")
     split_domain(tree)
