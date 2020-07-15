@@ -79,22 +79,28 @@ function split_data(data::Array, i::Int64, N::Int64)
     end
 end
 
-function extent(tree::AbstractTree)
-    if isempty(tree.data)
-        return nothing
-    else
-        return extent(tree.data)
+function split_data(data::Dict, i::Int64, N::Int64)
+    d = empty(data)
+    for key in keys(data)
+        d[key] = split_data(data[key], i, N)
     end
+    return d
 end
+
+extent(tree::AbstractTree) = return extent(tree.data)
 
 function global_extent(tree::AbstractTree)
     es = gather(tree, extent)
-    es = filter(!isnothing, es) # Now it's an array of union{Nothing, Extent}
 
     e = es[1]
     for i in es
         e = extent(e, i)
     end
+
+    if isnothing(e)
+        error("Got empty global data")
+    end
+
     bcast(tree, :extent, e)
     tree.extent = e
 end

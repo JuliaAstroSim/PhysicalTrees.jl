@@ -11,7 +11,7 @@ function init_octree(data::Array, units, config::OctreeConfig, pids::Array{Int64
     end
 
     if haskey(registry, id) # This holder is included in pids
-        registry[id].isholder = true
+        registry[id] = setproperties!!(registry[id], isholder = true)
     else # Not included, so to init a new tree
         init_octree(id, true, units, config, e, empty(data), NumTotal, pids, type)
     end

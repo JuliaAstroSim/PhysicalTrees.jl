@@ -5,7 +5,8 @@ __precompile__(true)
 using Unitful, UnitfulAstro
 using Distributed
 using DataStructures
-
+using StaticArrays
+using BangBang
 
 import Base: +, -, show, real, iterate, length, append!, sum
 import Unitful.Units
@@ -36,13 +37,13 @@ export
     OctreeConfig,
 
     # Tree node
-    OctreeNode, OctreeNode2D,
+    OctreeNode,
     TopNode,
     DomainNode,
     ExtNode,
 
     # Tree
-    Octree, Octree2D,
+    Octree,
     extent, global_extent,
 
     # Peano
@@ -77,18 +78,18 @@ export
     include("Timing.jl")
     
     include("octree_sparse/config.jl")
-    include("octree_sparse/peano.jl")
+    #include("octree_sparse/peano.jl")
     include("octree_sparse/nodes.jl")
     include("octree_sparse/octrees.jl")
     include("octree_sparse/iterators.jl")
 
     include("octree_sparse/init.jl")
-    include("octree_sparse/domain.jl")
-    include("octree_sparse/build.jl")
-    include("octree_sparse/update.jl")
+    #include("octree_sparse/domain.jl")
+    #include("octree_sparse/build.jl")
+    #include("octree_sparse/update.jl")
 
-    include("octree_sparse/setup.jl")
-    include("octree_sparse/search.jl")
+    #include("octree_sparse/setup.jl")
+    #include("octree_sparse/search.jl")
 
 
     include("PrettyPrinting.jl")
