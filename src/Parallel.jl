@@ -15,18 +15,26 @@ next_treeid
 procs(tree::AbstractTree) = tree.pids
 
 getfrom(tree::AbstractTree, p::Int64, expr, mod::Module = PhysicalTrees) = getfrom(p, :(registry[$(tree.id)].$expr), mod)
+getfrom(tree::AbstractTree, p::Int64, expr1, expr2, mod::Module = PhysicalTrees) = getfrom(p, :(registry[$(tree.id)].$expr1.$expr2), mod)
 sendto(tree::AbstractTree, p::Int64, expr, data, mod::Module = PhysicalTrees) = sendto(p, :(registry[$(tree.id)].$expr), data, mod)
+sendto(tree::AbstractTree, p::Int64, expr1, expr2, data, mod::Module = PhysicalTrees) = sendto(p, :(registry[$(tree.id)].$expr1.$expr2), data, mod)
 
 bcast(tree::AbstractTree, expr, data, mod::Module = PhysicalTrees) = bcast(tree.pids, :(registry[$(tree.id)].$expr), data, mod)
+bcast(tree::AbstractTree, expr1, expr2, data, mod::Module = PhysicalTrees) = bcast(tree.pids, :(registry[$(tree.id)].$expr1.$expr2), data, mod)
 bcast(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = bcast(tree.pids, f, :(registry[$(tree.id)].$expr), mod)
+bcast(tree::AbstractTree, f::Function, expr1, expr2, mod::Module = PhysicalTrees) = bcast(tree.pids, f, :(registry[$(tree.id)].$expr1.$expr2), mod)
 bcast(tree::AbstractTree, f::Function, mod::Module = PhysicalTrees) = bcast(tree.pids, f, :(registry[$(tree.id)]), mod)
 
 scatter(tree::AbstractTree, data::Array, expr, mod::Module = PhysicalTrees) = scatter(tree.pids, data, :(registry[$(tree.id)].$expr), mod)
+scatter(tree::AbstractTree, data::Array, expr1, expr2, mod::Module = PhysicalTrees) = scatter(tree.pids, data, :(registry[$(tree.id)].$expr1.$expr2), mod)
 
 reduce(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = reduce(f, tree.pids, :(registry[$(tree.id)].$expr), mod)
+reduce(tree::AbstractTree, f::Function, expr1, expr2, mod::Module = PhysicalTrees) = reduce(f, tree.pids, :(registry[$(tree.id)].$expr1.$expr2), mod)
 
 gather(tree::AbstractTree, expr, mod::Module = PhysicalTrees) = gather(tree.pids, :(registry[$(tree.id)].$expr), mod)
+gather(tree::AbstractTree, expr1, expr2, mod::Module = PhysicalTrees) = gather(tree.pids, :(registry[$(tree.id)].$expr1.$expr2), mod)
 gather(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = gather(f, tree.pids, :(registry[$(tree.id)].$expr), mod)
+gather(tree::AbstractTree, f::Function, expr1, expr2, mod::Module = PhysicalTrees) = gather(f, tree.pids, :(registry[$(tree.id)].$expr1.$expr2), mod)
 gather(tree::AbstractTree, f::Function, mod::Module = PhysicalTrees) = gather(f, tree.pids, :(registry[$(tree.id)]), mod)
 
 function allgather(tree::AbstractTree, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)

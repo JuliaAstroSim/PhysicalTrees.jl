@@ -4,13 +4,13 @@ function summary(tree::AbstractTree)
     return string(typeof(tree), " defined on worker ", tree.id.first,
              ":\n    Distributed on workers: ", tree.pids,
              "\n                     units: ", tree.units,
-             "\n        Number of topnodes: ", tree.NTopnodes,
-             "\n       Number of topleaves: ", tree.NTopLeaves,
-             "\n             Domain factor: ", tree.DomainFac,
-             "\n         Domain start list: ", tree.DomainStartList,
-             "\n           Domain end list: ", tree.DomainEndList,
-             "\n                 Load list: ", tree.list_load,
-             "\n                 Work list: ", tree.list_work,
+             "\n        Number of topnodes: ", tree.domain.NTopnodes,
+             "\n       Number of topleaves: ", tree.domain.NTopLeaves,
+             "\n             Domain factor: ", tree.domain.DomainFac,
+             "\n         Domain start list: ", tree.domain.DomainStartList,
+             "\n           Domain end list: ", tree.domain.DomainEndList,
+             "\n                 Load list: ", tree.domain.list_load,
+             "\n                 Work list: ", tree.domain.list_work,
              "\n      Number of tree nodes: ", gather(tree, :NTreenodes),
              "\n    ", tree.extent,
              "\n", datainfo(tree),
@@ -36,7 +36,7 @@ function Base.show(io::IO, config::OctreeConfig)
 end
 
 function datainfo(tree::AbstractTree)
-    local_to_go = gather(tree, :local_to_go)
+    local_to_go = gather(tree, :domain, :local_to_go)
     local_to_go_string = string([string(x, "\n                                ") for x in local_to_go]...)
 
     return string(

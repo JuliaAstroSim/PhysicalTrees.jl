@@ -5,7 +5,7 @@ struct DomainData{L, I, F, C, V, M, B}
 
     DomainFac::F
     
-    peano_keys::Array{Int128,1}
+    peano_keys::Array{Pair{Int128, Ref},1}
 
     StartKeys::Array{Int128,1}
     Counts::Array{Int128,1}
@@ -39,7 +39,7 @@ function DomainData(pids::Array{Int64,1}, units)
 
         0.0,
 
-        Array{Int128,1}(),
+        Array{Pair{Int128, Ref},1}(),
 
         Array{Int128,1}(),
         Array{Int128,1}(),
