@@ -51,6 +51,7 @@ end
 
 # Commonly used functions
 sum(tree::AbstractTree, expr, mod::Module = PhysicalTrees) = sum(gather(tree, expr, mod))
+sum(tree::AbstractTree, expr1, expr2, mod::Module = PhysicalTrees) = sum(gather(tree, expr1, expr2, mod))
 function allsum(tree::AbstractTree, src_expr, target_expr = src_expr, mod::Module = PhysicalTrees)
     data = sum(tree, src_expr, mod)
     setfield!(tree, target_expr, data)

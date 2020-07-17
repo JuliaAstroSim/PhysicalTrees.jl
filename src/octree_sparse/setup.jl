@@ -9,13 +9,13 @@ function octree(data::Array,
     split_domain(tree)
     end_timer(tree, "tree_domain")
     
-    begin_timer(tree, "tree_build")
-    build(tree)
-    end_timer(tree, "tree_build")
-    
-    begin_timer(tree, "tree_update")
-    update(tree)
-    end_timer(tree, "tree_update")
+    #begin_timer(tree, "tree_build")
+    #build(tree)
+    #end_timer(tree, "tree_build")
+    #
+    #begin_timer(tree, "tree_update")
+    #update(tree)
+    #end_timer(tree, "tree_update")
 
     return tree
 end
@@ -36,7 +36,7 @@ function rebuild(tree::Octree)
 end
 
 function update_DomainTask_pids(tree::Octree, pids::Array{Int64,N}, newid::Pair{Int64, Int64}) where N
-    DomainTask = tree.DomainTask
+    DomainTask = tree.domain.DomainTask
     oldpids = tree.pids
     for i in eachindex(tree.pids)
         for j in eachindex(DomainTask)

@@ -1,9 +1,9 @@
-struct DomainData{L, I, F, C, V, M, B}
+mutable struct DomainData{L, I, F, C, V, M, B}
     topnodes::Array{TopNode{I},1}
     NTopnodes::I
     NTopLeaves::I
 
-    DomainFac::F
+    DomainFac::Number
     
     peano_keys::Array{Pair{Int128, Ref},1}
 
@@ -29,7 +29,6 @@ struct DomainData{L, I, F, C, V, M, B}
     #MomentsToSend::Array{DomainNode,1}
 
     local_to_go::Dict{I, I}
-    DeleteIDs::Array{I,1}
 end
 
 function DomainData(pids::Array{Int64,1}, units)
@@ -60,11 +59,10 @@ function DomainData(pids::Array{Int64,1}, units)
         fill(DomainNode(units), 0),
 
         Dict{Int64, Int64}(),
-        Array{Int64,1}(),
     )
 end
 
-struct Octree{T, L, I, F, C, V, M, B} <: AbstractOctree3D{T}
+mutable struct Octree{T, L, I, F, C, V, M, B} <: AbstractOctree3D{T}
     id::Pair{Int64,Int64}
     isholder::Bool
 

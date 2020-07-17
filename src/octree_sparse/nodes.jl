@@ -1,13 +1,13 @@
 struct TopNode{I<:Integer}
-    Daughter::I
-    Pstart::I
-    Blocks::I
+    Daughter::I # There would not be topnodes more than 2^31
+    Pstart::Int128
+    Blocks::Int128
     Leaf::I
     Size::Int128
     StartKey::Int128
     Count::Int128
 end
-TopNode(;bits=21) = TopNode(-1, 1, 0, 0, Int128(1)<<(3*bits), Int128(0), Int128(0))
+TopNode(;bits=21) = TopNode(-1, Int128(1), Int128(0), 0, Int128(1)<<(3*bits), Int128(0), Int128(0))
 @inline length(p::T) where T <: TopNode = 1
 
 #=

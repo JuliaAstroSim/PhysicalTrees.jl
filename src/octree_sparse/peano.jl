@@ -120,8 +120,23 @@ end
 
 peanokey(p::AbstractParticle3D, Corner::PVector, DomainFac::Number, bits::Int64=peano_3D_bits) = peanokey(p.Pos, Corner, DomainFac, bits)
 
-peanokey(data::Array, Corner::PVector2D, DomainFac::Number, bits::Int64) = [peanokey(p, Corner, DomainFac, bits) for p in data]
-peanokey(data::Array, Corner::PVector, DomainFac::Number, bits::Int64) = [peanokey(p, Corner, DomainFac, bits) for p in data]
+function peanokey(data::Array, Corner::AbstractPoint, DomainFac::Number, bits::Int64)
+    peano = Array{Pair{Int128, Ref},1}()
+    for p in data
+        push!(peano, Pair(peanokey(p, Corner, DomainFac, bits), Ref(p)))
+    end
+    return peano
+end
+
+function peanokey(data::Dict, Corner::AbstractPoint, DomainFac::Number, bits::Int64)
+    peano = Array{Pair{Int128, Ref},1}()
+    for key in keys(data)
+        for p in data[key]
+            push!(peano, Pair(peanokey(p.Pos, Corner, DomainFac, bits), Ref(p)))
+        end
+    end
+    return peano
+end
 
 # implementing scale-free Hilbert ordering. Real all about it here:
 # http://doc.cgal.org/latest/Spatial_sorting/index.html

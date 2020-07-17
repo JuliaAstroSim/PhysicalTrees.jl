@@ -78,17 +78,17 @@ export
     include("Timing.jl")
     
     include("octree_sparse/config.jl")
-    #include("octree_sparse/peano.jl")
+    include("octree_sparse/peano.jl")
     include("octree_sparse/nodes.jl")
     include("octree_sparse/octrees.jl")
     include("octree_sparse/iterators.jl")
 
     include("octree_sparse/init.jl")
-    #include("octree_sparse/domain.jl")
-    #include("octree_sparse/build.jl")
-    #include("octree_sparse/update.jl")
+    include("octree_sparse/domain.jl")
+    include("octree_sparse/build.jl")
+    include("octree_sparse/update.jl")
 
-    #include("octree_sparse/setup.jl")
+    include("octree_sparse/setup.jl")
     #include("octree_sparse/search.jl")
 
 
