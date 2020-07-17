@@ -78,7 +78,7 @@ DomainNode(::Nothing) = DomainNode(PVector(), PVector(), 0.0, 0.0, 0)
 function DomainNode(u::Array)
     uLength = getuLength(u)
     uTime = getuTime(u)
-    uMass = getuLength(u)
+    uMass = getuMass(u)
     DomainNode(PVector(uLength), PVector(uLength / uTime), 0.0uMass, 0.0uLength,0)
 end
 

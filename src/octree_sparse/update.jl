@@ -312,15 +312,15 @@ function update_node_len_local(tree::Octree)
         end
     end
 
-    tree.DomainNodeLen = [treenodes[tree.DomainNodeIndex[i] - MaxData].SideLength for i in tree.DomainMyStart:tree.DomainMyEnd]
+    tree.DomainNodeLen = [treenodes[tree.domain.DomainNodeIndex[i] - MaxData].SideLength for i in tree.domain.DomainMyStart:tree.domain.DomainMyEnd]
 end
 
 function update_node_len_toptree(tree::Octree)
     treenodes = tree.treenodes
     MaxData = tree.config.MaxData
-    for i in 1:tree.NTopLeaves
-        if i < tree.DomainMyStart || i > tree.DomainMyEnd
-            no = tree.DomainNodeIndex[i]
+    for i in 1:tree.domain.NTopLeaves
+        if i < tree.domain.DomainMyStart || i > tree.domain.DomainMyEnd
+            no = tree.domain.DomainNodeIndex[i]
 
             if treenodes[no - MaxData].SideLength < tree.DomainNodeLen[i]
                 treenodes[no - MaxData].SideLength = tree.DomainNodeLen[i]

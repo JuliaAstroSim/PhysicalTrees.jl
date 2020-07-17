@@ -1,5 +1,5 @@
 function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64, x::Int64, y::Int64, z::Int64)
-    topnodes = tree.topnodes
+    topnodes = tree.domain.topnodes
     treenodes = tree.treenodes
     MaxData = tree.config.MaxData
 
@@ -19,22 +19,21 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
                     count = 1 + i + 2 * j + 4 * k
 
                     treenodes[no].DaughterID[count] = tree.nextfreenode + MaxData
-                    treenodes[tree.nextfreenode].SideLength = 0.5 * treenodes[no].SideLength
-
-                    treenodes[tree.nextfreenode].Center = treenodes[no].Center + PVector((2 * i - 1) * 0.25 * treenodes[no].SideLength,
-                                                                                         (2 * j - 1) * 0.25 * treenodes[no].SideLength,
-                                                                                         (2 * k - 1) * 0.25 * treenodes[no].SideLength)
+                    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], SideLength = 0.5 * treenodes[no].SideLength,
+                                                       Center = treenodes[no].Center + PVector((2 * i - 1) * 0.25 * treenodes[no].SideLength,
+                                                                                               (2 * j - 1) * 0.25 * treenodes[no].SideLength,
+                                                                                               (2 * k - 1) * 0.25 * treenodes[no].SideLength))
 
                     if topnodes[topnodes[top].Daughter + sub].Daughter == -1
                         # this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree
-                        tree.DomainNodeIndex[topnodes[topnodes[top].Daughter + sub].Leaf] = tree.nextfreenode + MaxData
+                        tree.domain.DomainNodeIndex[topnodes[topnodes[top].Daughter + sub].Leaf] = tree.nextfreenode + MaxData
                     end
 
                     tree.NTreenodes += 1
                     tree.nextfreenode += 1
 
                     create_empty_treenodes(tree,
-                                            tree.nextfreenode - 1, tree.topnodes[top].Daughter + sub,
+                                            tree.nextfreenode - 1, tree.domain.topnodes[top].Daughter + sub,
                                             bits + 1, 2 * x + i, 2 * y + j, 2 * z + k)
                 end
             end
@@ -43,11 +42,11 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
 end
 
 function init_treenodes(tree::Octree)
-    tree.DomainNodeIndex = zeros(Int64, tree.NTopLeaves)
+    tree.domain.DomainNodeIndex = zeros(Int64, tree.domain.NTopLeaves)
 
     tree.treenodes = [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection]
-    tree.treenodes[1].Center = tree.extent.Center
-    tree.treenodes[1].SideLength = tree.extent.SideLength
+    tree.treenodes[1] = setproperties!!(tree.treenodes[1], Center = tree.extent.Center,
+                                                           SideLength = tree.extent.SideLength)
 
     tree.NTreenodes = 1
     tree.nextfreenode = 2
@@ -100,20 +99,20 @@ end
 function insert_data(tree::Octree)
     DomainCorner = tree.extent.Corner
     data = tree.data
-    topnodes = tree.topnodes
+    topnodes = tree.domain.topnodes
     treenodes = tree.treenodes
     MaxData = tree.config.MaxData
     epsilon = tree.config.epsilon
     uLength = getuLength(tree.units)
     for i in 1:length(data)
-        key = peanokey(data[i], DomainCorner, tree.DomainFac)
+        key = peanokey(data[i], DomainCorner, tree.domain.DomainFac)
 
         no = 1
         while topnodes[no].Daughter >= 0
             @inbounds no = trunc(Int64, topnodes[no].Daughter + (key - topnodes[no].StartKey) / (topnodes[no].Size / 8))
         end
         no = topnodes[no].Leaf
-        index = tree.DomainNodeIndex[no]
+        index = tree.domain.DomainNodeIndex[no]
         if index == 0
             error("index == 0 for ", data[i])
         end
@@ -142,7 +141,7 @@ function insert_data(tree::Octree)
                 # Need to generate a new internal node at this point
                 treenodes[parent - MaxData].DaughterID[subnode] = tree.nextfreenode + MaxData
 
-                treenodes[tree.nextfreenode].SideLength = 0.5 * treenodes[parent - MaxData].SideLength
+                treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode] , SideLength = 0.5 * treenodes[parent - MaxData].SideLength)
                 lenhalf = 0.25 * treenodes[parent - MaxData].SideLength
 
                 if (subnode - 1) & 1 > 0
@@ -163,7 +162,7 @@ function insert_data(tree::Octree)
                     centerZ = treenodes[parent - MaxData].Center.z - lenhalf
                 end
 
-                treenodes[tree.nextfreenode].Center = PVector(centerX, centerY, centerZ)
+                treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode] , Center = PVector(centerX, centerY, centerZ))
 
                 subnode = find_subnode(data[index], treenodes[tree.nextfreenode].Center)
 
@@ -196,18 +195,18 @@ function insert_data(tree::Octree)
 end
 
 function insert_data_pseudo(tree::Octree)
-    tree.DomainMoment = [DomainNode(tree.units) for i in 1:tree.NTopLeaves]
+    tree.domain.DomainMoment = [DomainNode(tree.units) for i in 1:tree.domain.NTopLeaves]
 
     MaxData = tree.config.MaxData
     MaxTreenode = tree.config.MaxTreenode
     treenodes = tree.treenodes
-    for i in 1:tree.NTopLeaves
-        @inbounds tree.DomainMoment[i].Mass = 0.0u"Msun"
-        @inbounds tree.DomainMoment[i].MassCenter = treenodes[tree.DomainNodeIndex[i] - MaxData].Center
+    for i in 1:tree.domain.NTopLeaves
+        @inbounds tree.domain.DomainMoment[i] = setproperties!!(tree.domain.DomainMoment[i], Mass = 0.0 * tree.domain.DomainMoment[i].Mass,
+                                                                    MassCenter = treenodes[tree.domain.DomainNodeIndex[i] - MaxData].Center)
     end
 
-    for i in 1:tree.NTopLeaves
-        if i < tree.DomainMyStart || i > tree.DomainMyEnd
+    for i in 1:tree.domain.NTopLeaves
+        if i < tree.domain.DomainMyStart || i > tree.domain.DomainMyEnd
             index = MaxData + 1
 
             while true
@@ -217,7 +216,7 @@ function insert_data_pseudo(tree::Octree)
                         error("Error in DomainMoment indexing #01")
                     end
 
-                    subnode = find_subnode(tree.DomainMoment[i].MassCenter, treenodes[index - MaxData].Center)
+                    subnode = find_subnode(tree.domain.DomainMoment[i].MassCenter, treenodes[index - MaxData].Center)
                     nn = treenodes[index - MaxData].DaughterID[subnode]
 
                     if nn > 0

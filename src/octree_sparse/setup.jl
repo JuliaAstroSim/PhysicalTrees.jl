@@ -9,10 +9,10 @@ function octree(data::Array,
     split_domain(tree)
     end_timer(tree, "tree_domain")
     
-    #begin_timer(tree, "tree_build")
-    #build(tree)
-    #end_timer(tree, "tree_build")
-    #
+    begin_timer(tree, "tree_build")
+    build(tree)
+    end_timer(tree, "tree_build")
+    
     #begin_timer(tree, "tree_update")
     #update(tree)
     #end_timer(tree, "tree_update")
