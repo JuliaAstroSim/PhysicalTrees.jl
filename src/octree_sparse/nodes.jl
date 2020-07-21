@@ -23,7 +23,7 @@ struct OctreeNode2D{I<:Integer} <: AbstractOctreeNode2D{I}
     SparseDaughterID::Array{I,1} # Walk in sparse tree to improve performance
     PDM_Mass::Number
     PDM_MassCenter::AbstractPoint2D
-    IsLeaf::Bool
+    IsAssigned::Bool
     ParticleID::I # Refers to the particle on this leaf.
                       # One leaf can only take one particle. Set 0 if none or more than 1
 
@@ -45,7 +45,7 @@ struct OctreeNode{I<:Integer, C, L, M} <: AbstractOctreeNode{I}
     Mass::M
     MassCenter::C
     MaxSoft::L
-    IsLeaf::Bool
+    IsAssigned::Bool
     ParticleID::I # Refers to the particle on this leaf.
                       # One leaf can only take one particle. Set 0 if none or more than 1
 
@@ -55,13 +55,13 @@ struct OctreeNode{I<:Integer, C, L, M} <: AbstractOctreeNode{I}
 end
 
 OctreeNode(::Nothing) = OctreeNode(1, 0, MArray{Tuple{8}}([0,0,0,0,0,0,0,0]), PVector(), 0.0, 0.0,
-                        PVector(), 0.0, true, 0, 0, 0, 0)
+                        PVector(), 0.0, false, 0, 0, 0, 0)
 
 function OctreeNode(u::Array)
     uLength = getuLength(u)
-    uMass = getuLength(u)
+    uMass = getuMass(u)
     return OctreeNode(1, 0, MArray{Tuple{8}}([0,0,0,0,0,0,0,0]), PVector(uLength), 0.0uLength, 0.0uMass,
-                        PVector(uLength), 0.0uLength, true, 0, 0, 0, 0)
+                        PVector(uLength), 0.0uLength, false, 0, 0, 0, 0)
 end
 
 

@@ -86,7 +86,6 @@ mutable struct Octree{T, L, I, F, C, V, M, B} <: AbstractOctree3D{T}
     nextfreenode::I
 
     NextNodes::Array{I,1}
-    Fathers::Array{I,1}
     ExtNodes::Array{ExtNode{L, V},1}
     last::I
 
@@ -112,13 +111,12 @@ function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConf
 
         DomainData(pids, units),
 
-        fill(OctreeNode(units), config.TreeAllocSection),
+        [OctreeNode(units) for i in 1:config.TreeAllocSection],
         0,
         0,
 
-        fill(0, config.MaxData + config.MaxTopnode),
-        fill(0, config.MaxData),
-        fill(ExtNode(units), config.MaxTreenode),
+        [0 for i in 1:config.MaxTopnode],
+        [ExtNode(units) for i in 1:config.MaxTreenode],
         0,
 
         fill(Len, 0),

@@ -12,7 +12,7 @@ struct OctreeConfig{I<:Integer, T<:AbstractFloat}
     PeanoBits2D::Int64
 
     NumDataFactor::I
-    MaxData::I
+
     epsilon::Float64
 end
 
@@ -44,8 +44,6 @@ function OctreeConfig(
     ToptreeAllocSection = NumDataBase * ToptreeAllocFactor
     TreeAllocSection = NumDataBase * TreeAllocFactor
 
-    MaxData = 10 * NumDataBase * NumDataFactor
-
     return OctreeConfig(
         ToptreeAllocSection,
         MaxTopnode,
@@ -60,7 +58,7 @@ function OctreeConfig(
         PeanoBits2D,
 
         NumDataFactor,
-        MaxData,
+
         epsilon,
     )
 end

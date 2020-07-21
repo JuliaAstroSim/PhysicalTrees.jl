@@ -9,7 +9,7 @@ function init_peano(tree::Octree)
 end
 
 function init_topnode(tree::Octree)
-    tree.domain.topnodes = fill(TopNode(bits = tree.config.PeanoBits3D), tree.config.ToptreeAllocSection)
+    tree.domain.topnodes = [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection]
     tree.domain.NTopnodes = 1
     tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Count = Int128(tree.NumLocal))
 end
@@ -23,7 +23,7 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
         for i in 0:7
             if tree.domain.NTopnodes >= length(topnodes) - 8
                 if length(topnodes) <= tree.config.MaxTopnode
-                    append!(topnodes, fill(TopNode(bits = tree.config.PeanoBits3D), tree.config.ToptreeAllocSection))
+                    append!(topnodes, [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection])
                 else
                     error("Running out of topnodes, please increase the MaxTopNodes in Config")
                 end
@@ -98,7 +98,7 @@ end
 function reinit_topnode(tree::Octree)
     tree.domain.NTopLeaves = 0
 
-    tree.domain.topnodes = fill(TopNode(bits = tree.config.PeanoBits3D), tree.config.ToptreeAllocSection)
+    tree.domain.topnodes = [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection]
     tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Count = Int128(tree.NumTotal))
     tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Blocks = Int128(tree.domain.NTopLeaves))
 
@@ -114,7 +114,7 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
         for i in 0:7
             if tree.domain.NTopnodes >= length(topnodes) - 8
                 if length(topnodes) <= tree.config.MaxTopnode
-                    append!(topnodes, fill(TopNode(bits = tree.config.PeanoBits3D), tree.config.ToptreeAllocSection))
+                    append!(topnodes, [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection])
                 else
                     error("Running out of topnodes, please increase the MaxTopnode in Config")
                 end
