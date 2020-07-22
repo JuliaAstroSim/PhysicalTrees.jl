@@ -1,4 +1,4 @@
-function init_octree(data::Array, units, config::OctreeConfig, pids::Array{Int64,1})
+function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
     id = next_treeid()
     e = extent(data)
     e.SideLength *= config.ExtentMargin

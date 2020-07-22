@@ -26,7 +26,7 @@ mutable struct DomainData{L, I, F, C, V, M, B}
     DomainNodeIndex::Array{I,1}
 
     DomainMoment::Array{DomainNode{C, V, M, L, B},1}
-    #MomentsToSend::Array{DomainNode,1}
+    MomentsToSend::Array{DomainNode{C, V, M, L, B},1}
 
     local_to_go::Dict{I, I}
 end
@@ -56,6 +56,7 @@ function DomainData(pids::Array{Int64,1}, units)
 
         Array{Int64,1}(),
 
+        fill(DomainNode(units), 0),
         fill(DomainNode(units), 0),
 
         Dict{Int64, Int64}(),
@@ -89,8 +90,6 @@ mutable struct Octree{T, L, I, F, C, V, M, B} <: AbstractOctree3D{T}
     ExtNodes::Array{ExtNode{L, V},1}
     last::I
 
-    DomainNodeLen::Array{L, 1}
-
     sendbuffer::Dict{Int64, Any}
     recvbuffer::Dict{Int64, Any}
 
@@ -98,13 +97,6 @@ mutable struct Octree{T, L, I, F, C, V, M, B} <: AbstractOctree3D{T}
 end
 
 function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1})
-    uLength = getuLength(units)
-    if isnothing(uLength)
-        Len = 0.0
-    else
-        Len = 0.0 * uLength
-    end
-
     return Octree(
         id, isholder, units,
         config, extent, data, pids, NumTotal, 0,
@@ -118,8 +110,6 @@ function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConf
         [0 for i in 1:config.MaxTopnode],
         [ExtNode(units) for i in 1:config.MaxTreenode],
         0,
-
-        fill(Len, 0),
 
         Dict{Int64, Any}(),
         Dict{Int64, Any}(),

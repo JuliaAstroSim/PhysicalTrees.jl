@@ -1,4 +1,4 @@
-function octree(data::Array,
+function octree(data,
                ;
                units = uAstro,
                config = OctreeConfig(length(data)),
@@ -13,9 +13,9 @@ function octree(data::Array,
     build(tree)
     end_timer(tree, "tree_build")
     
-    #begin_timer(tree, "tree_update")
-    #update(tree)
-    #end_timer(tree, "tree_update")
+    begin_timer(tree, "tree_update")
+    update(tree)
+    end_timer(tree, "tree_update")
 
     return tree
 end

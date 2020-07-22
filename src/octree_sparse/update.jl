@@ -14,7 +14,6 @@ getvel(p::AbstractParticle, ::Nothing) = p.Vel
 getvel(p::AbstractParticle, u::Units) = uconvert(u, p.Vel)
 
 function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, father::Int64)
-    MaxData = tree.config.MaxData
     MaxTreenode = tree.config.MaxTreenode
     treenodes = tree.treenodes
     NextNodes = tree.NextNodes
@@ -30,18 +29,14 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
     vs = nothing
     hmax = nothing
 
-    if no > MaxData && no <= MaxData + MaxTreenode  # internal node
-        suns = deepcopy(treenodes[no - MaxData].DaughterID)
+    if no <= MaxTreenode # internal node
+        suns = deepcopy(treenodes[no].DaughterID)
 
         if tree.last > 0
-            if tree.last > MaxData
-                if tree.last > MaxData + MaxTreenode  # pseudo-particle
-                    NextNodes[tree.last - MaxTreenode] = no
-                else
-                    treenodes[tree.last - MaxData].NextNode = no
-                end
+            if tree.last > MaxTreenode  # pseudo-particle
+                NextNodes[tree.last - MaxTreenode] = no
             else
-                NextNodes[tree.last] = no
+                treenodes[tree.last] = setproperties!!(treenodes[tree.last], NextNode = no)
             end
         end
         tree.last = no
@@ -83,22 +78,14 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
                 # Depth-First
                 update_treenodes_kernel(tree, p, nextsib, no)
 
-                if p > MaxData
-                    if p <= MaxData + MaxTreenode
-                        mass += treenodes[p - MaxData].Mass
-                        s += ustrip(uMass, treenodes[p - MaxData].Mass) * treenodes[p - MaxData].MassCenter
-                        vs += ustrip(uMass, treenodes[p - MaxData].Mass) * ExtNodes[p - MaxData].vs
+                if p <= MaxTreenode
+                    mass += treenodes[p].Mass
+                    s += ustrip(uMass, treenodes[p].Mass) * treenodes[p].MassCenter
+                    vs += ustrip(uMass, treenodes[p].Mass) * ExtNodes[p].vs
 
-                        hmax = max(hmax, ExtNodes[p - MaxData].hmax)
-                    else # Pseudo-particle
-                        # Nothing to do since we had not updated pseudo data
-                    end
-                else  # A particle
-                    pa = tree.data[p]
-
-                    mass += getmass(pa, uMass)
-                    s += ustrip(uMass, getmass(pa, uMass)) * getpos(pa)
-                    vs += ustrip(uMass, getmass(pa, uMass)) * getvel(pa, uVel)
+                    hmax = max(hmax, ExtNodes[p].hmax)
+                else # Pseudo-particle
+                    # Nothing to do since we had not updated pseudo data
                 end
             end
         end
@@ -107,80 +94,63 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
             s /= ustrip(uMass, mass)
             vs /= ustrip(uMass, mass)
         else
-            s = treenodes[no - MaxData].Center # Geometric center
+            s = treenodes[no].Center # Geometric center
         end
 
-        treenodes[no - MaxData].MassCenter = s
-        treenodes[no - MaxData].Mass = mass
-
-        treenodes[no - MaxData].BitFlag = 0
-
-        ExtNodes[no - MaxData].vs = vs
-        ExtNodes[no - MaxData].hmax = hmax
-
-        treenodes[no - MaxData].Sibling = sib
-        treenodes[no - MaxData].Father = father
-    else # single particle or pseudo particle
+        treenodes[no] = setproperties!!(treenodes[no], MassCenter = s,
+                                                    Mass = mass,
+                                                    BitFlag = 0,
+                                                    Sibling = sib,
+                                                    Father = father)
+        
+        ExtNodes[no] = setproperties!!(ExtNodes[no], vs = vs, hmax = hmax)
+    else # pseudo particle
         if tree.last > 0
-            if tree.last > MaxData
-                if tree.last > MaxData + MaxTreenode
-                    NextNodes[tree.last - MaxTreenode] = no
-                else
-                    treenodes[tree.last - MaxData].NextNode = no
-                end
+            if tree.last > MaxTreenode  # pseudo-particle
+                NextNodes[tree.last - MaxTreenode] = no
             else
-                NextNodes[tree.last] = no
+                treenodes[tree.last] = setproperties!!(treenodes[tree.last], NextNode = no)
             end
         end
-
         tree.last = no
-        if no <= MaxData
-            tree.Fathers[no] = father
-        end
     end
 end
 
 function finish_last(tree::AbstractTree)
-    if tree.last > tree.config.MaxData
-        if tree.last > tree.config.MaxData + tree.config.MaxTreenode
-            tree.NextNodes[tree.last - tree.config.MaxTreenode] = 0
-        else
-            tree.treenodes[tree.last - tree.config.MaxData].NextNode = 0
-        end
+    if tree.last > tree.config.MaxTreenode
+        tree.NextNodes[tree.last - tree.config.MaxTreenode] = 0
     else
-        tree.NextNodes[tree.last] = 0
+        tree.treenodes[tree.last] = setproperties!!(tree.treenodes[tree.last], NextNode = 0)
     end
 end
 
 function update_local_data(tree::AbstractTree)
-    tree.Fathers = zeros(Int64, tree.config.MaxData)
     tree.ExtNodes = [ExtNode(tree.units) for i in 1:tree.config.MaxTreenode]
-    tree.NextNodes = zeros(Int64, tree.config.MaxData + tree.config.MaxTopnode)
+    tree.NextNodes = zeros(Int64, tree.config.MaxTopnode)
 
     tree.last = 0
-    update_treenodes_kernel(tree, tree.config.MaxData + 1, 0, 0)
+    update_treenodes_kernel(tree, 1, 0, 0)
     finish_last(tree)
 end
 
 function fill_pseudo_buffer(tree::AbstractTree)
     treenodes = tree.treenodes
-    DomainMoment = tree.DomainMoment
-    MaxData = tree.config.MaxData
+    DomainMoment = tree.domain.DomainMoment
 
-    empty!(tree.MomentsToSend)
+    empty!(tree.domain.MomentsToSend)
 
-    for i in tree.DomainMyStart : tree.DomainMyEnd
-        no = tree.DomainNodeIndex[i]
-        DomainMoment[i].Mass = treenodes[no - MaxData].Mass
-        DomainMoment[i].MassCenter = treenodes[no - MaxData].MassCenter
-        DomainMoment[i].Vel = tree.ExtNodes[no - MaxData].vs
+    for i in tree.domain.DomainMyStart : tree.domain.DomainMyEnd
+        no = tree.domain.DomainNodeIndex[i]
+        DomainMoment[i] = setproperties!!(DomainMoment[i], Mass = treenodes[no].Mass,
+                                                           MassCenter = treenodes[no].MassCenter,
+                                                           Vel = tree.ExtNodes[no].vs)
     end
 
-    tree.MomentsToSend = tree.DomainMoment[tree.DomainMyStart:tree.DomainMyEnd]
+    tree.domain.MomentsToSend = DomainMoment[tree.domain.DomainMyStart:tree.domain.DomainMyEnd]
 end
 
 function update_pseudo_data(tree::AbstractTree)
-    empty!(tree.MomentsToSend)
+    empty!(tree.domain.MomentsToSend)
 
     uLength = getuLength(tree.units)
     uTime = getuTime(tree.units)
@@ -203,34 +173,33 @@ function update_pseudo_data(tree::AbstractTree)
         massnew = 0.0 * uMass
     end
 
-    MaxData = tree.config.MaxData
     treenodes = tree.treenodes
     NextNodes = tree.NextNodes
     ExtNodes = tree.ExtNodes
-    DomainMoment = tree.DomainMoment
+    DomainMoment = tree.domain.DomainMoment
 
-    for i in 1:tree.NTopLeaves
-        if i < tree.DomainMyStart || i > tree.DomainMyEnd
-            no = tree.DomainNodeIndex[i]
+    for i in 1:tree.domain.NTopLeaves
+        if i < tree.domain.DomainMyStart || i > tree.domain.DomainMyEnd
+            no = tree.domain.DomainNodeIndex[i]
 
-            sold = treenodes[no - MaxData].MassCenter
-            vsold = ExtNodes[no - MaxData].vs
-            massold = treenodes[no - MaxData].Mass
+            sold = treenodes[no].MassCenter
+            vsold = ExtNodes[no].vs
+            massold = treenodes[no].Mass
 
             snew = DomainMoment[i].MassCenter
             vsnew = DomainMoment[i].Vel
             massnew = DomainMoment[i].Mass
 
             while no > 0
-                mm = treenodes[no - MaxData].Mass + massnew - massold
+                mm = treenodes[no].Mass + massnew - massold
                 if ustrip(mm) > 0.0
-                    treenodes[no - MaxData].MassCenter = (treenodes[no - MaxData].Mass * treenodes[no - MaxData].MassCenter +
-                                                            massnew * snew - massold * sold) / mm
-                    ExtNodes[no - MaxData].vs = (treenodes[no - MaxData].Mass * ExtNodes[no - MaxData].vs +
-                                                            massnew * vsnew - massold * vsold) / mm
+                    treenodes[no] = setproperties!!(treenodes[no], MassCenter = (treenodes[no].Mass * treenodes[no].MassCenter +
+                                                            massnew * snew - massold * sold) / mm)
+                    ExtNodes[no] = setproperties!!(ExtNodes[no], vs = (treenodes[no].Mass * ExtNodes[no].vs +
+                                                            massnew * vsnew - massold * vsold) / mm)
                 end
-                treenodes[no - MaxData].Mass = mm
-                no = treenodes[no - MaxData].Father
+                treenodes[no] = setproperties!!(treenodes[no], Mass = mm)
+                no = treenodes[no].Father
             end # while
         end # if
     end # for
@@ -238,34 +207,33 @@ end
 
 function flag_local_treenodes(tree::AbstractTree)
     treenodes = tree.treenodes
-    MaxData = tree.config.MaxData
     # mark all top-level nodes
-    for i in 1:length(tree.DomainNodeIndex)
-        no = tree.DomainNodeIndex[i]
+    for i in 1:length(tree.domain.DomainNodeIndex)
+        no = tree.domain.DomainNodeIndex[i]
 
         while no > 0
-            if (treenodes[no - MaxData].BitFlag & 1) > 0
+            if (treenodes[no].BitFlag & 1) > 0
                 break
             end
 
-            treenodes[no - MaxData].BitFlag |= 1
+            treenodes[no] = setproperties!!(treenodes[no], BitFlag = treenodes[no].BitFlag | 1)
 
-            no = treenodes[no - MaxData].Father
+            no = treenodes[no].Father
         end
     end
 
     # mark top-level nodes that contain local particles
-    for i in tree.DomainMyStart:tree.DomainMyEnd
-        no = tree.DomainNodeIndex[i]
+    for i in tree.domain.DomainMyStart:tree.domain.DomainMyEnd
+        no = tree.domain.DomainNodeIndex[i]
 
         while no > 0
-            if (treenodes[no - MaxData].BitFlag & 2) > 0
+            if (treenodes[no].BitFlag & 2) > 0
                 break
             end
 
-            treenodes[no - MaxData].BitFlag |= 2
+            treenodes[no] = setproperties!!(treenodes[no], BitFlag = treenodes[no].BitFlag | 2)
 
-            no = treenodes[no - MaxData].Father
+            no = treenodes[no].Father
         end
     end
 end
@@ -275,92 +243,9 @@ function update(tree::AbstractTree)
     bcast(tree, fill_pseudo_buffer)
 
     # send pseudo buffer
-    tree.DomainMoment = reduce(vcat, gather(tree, :MomentsToSend))
-    bcast(tree, :DomainMoment, tree.DomainMoment)
+    tree.domain.DomainMoment = reduce(vcat, gather(tree, :domain, :MomentsToSend))
+    bcast(tree, :domain, :DomainMoment, tree.domain.DomainMoment)
 
     bcast(tree, update_pseudo_data)
     bcast(tree, flag_local_treenodes)
-end
-
-function update_node_len_local(tree::Octree)
-    treenodes = tree.treenodes
-    MaxData = tree.config.MaxData
-    for i in 1:tree.NumLocal
-        no = tree.Fathers[i]
-        dist = tree.data[i].Pos - treenodes[no - MaxData].MassCenter
-        dist_max = max(abs(dist.x), abs(dist.y), abs(dist.z))
-
-        if 2.0 * dist_max > treenodes[no - MaxData].SideLength
-            treenodes[no - MaxData].SideLength = 2.0 * dist_max
-            p = treenodes[no - MaxData].Father
-
-            while p > 0
-                dist_max = treenodes[p - MaxData].MassCenter.x - treenodes[no - MaxData].MassCenter.x
-                if ustrip(dist_max) < 0.0
-                    dist_max = - dist_max
-                end
-                dist_max = 2.0 * dist_max + treenodes[no - MaxData].SideLength
-
-                if 0.999999 * dist_max > treenodes[no - MaxData].SideLength
-                    treenodes[p - MaxData].SideLength = dist_max
-                    no = p
-                    p = treenodes[p - MaxData].Father
-                else
-                    break
-                end
-            end
-        end
-    end
-
-    tree.DomainNodeLen = [treenodes[tree.domain.DomainNodeIndex[i] - MaxData].SideLength for i in tree.domain.DomainMyStart:tree.domain.DomainMyEnd]
-end
-
-function update_node_len_toptree(tree::Octree)
-    treenodes = tree.treenodes
-    MaxData = tree.config.MaxData
-    for i in 1:tree.domain.NTopLeaves
-        if i < tree.domain.DomainMyStart || i > tree.domain.DomainMyEnd
-            no = tree.domain.DomainNodeIndex[i]
-
-            if treenodes[no - MaxData].SideLength < tree.DomainNodeLen[i]
-                treenodes[no - MaxData].SideLength = tree.DomainNodeLen[i]
-            end
-
-            p = treenodes[no - MaxData].Father
-
-            while p > 0
-                dist_max = treenodes[p - MaxData].MassCenter.x - treenodes[no - MaxData].MassCenter.x
-                if ustrip(dist_max) < 0.0
-                    dist_max = - dist_max
-                end
-                dist_max = 2.0 * dist_max + treenodes[no - MaxData].SideLength
-
-                if 0.999999 * dist_max > treenodes[no - MaxData].SideLength
-                    treenodes[p - MaxData].SideLength = dist_max
-                    no = p
-                    p = treenodes[p - MaxData].Father
-                else
-                    break
-                end
-            end
-        end
-    end
-end
-
-function update_node_len(tree::AbstractTree)
-    bcast(tree, update_node_len_local)
-
-    DomainNodeLen = reduce(vcat, gather(tree, :DomainNodeLen))
-    bcast(tree, :DomainNodeLen, DomainNodeLen)
-
-    bcast(tree, update_node_len_toptree)
-
-
-    bcast(tree, fill_pseudo_buffer)
-
-    # send pseudo buffer
-    tree.DomainMoment = reduce(vcat, gather(tree, :MomentsToSend))
-    bcast(tree, :DomainMoment, tree.DomainMoment)
-
-    bcast(tree, update_pseudo_data)
 end

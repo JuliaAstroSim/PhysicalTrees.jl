@@ -153,7 +153,7 @@ end
 
 function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractParticle)
     tree.treenodes[index] = setproperties!!(tree.treenodes[index], Mass = p.Mass,
-                                                                   MassCenter = p.MassCenter,
+                                                                   MassCenter = p.Pos,
                                                                    IsAssigned = true)
 end
 

@@ -341,7 +341,7 @@ function clear_domain_buffer(tree::Octree)
 
     for d in Iterators.flatten(values(tree.recvbuffer))
         push!(peano_keys, Pair(d.first, Ref(d.second)))
-        push!(data, d.second)
+        pushdata!(data, d.second)
     end
 
     tree.NumLocal = length(data)

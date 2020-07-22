@@ -10,32 +10,6 @@ end
 TopNode(;bits=21) = TopNode(-1, Int128(1), Int128(0), 0, Int128(1)<<(3*bits), Int128(0), Int128(0))
 @inline length(p::T) where T <: TopNode = 1
 
-#=
-struct OctreeNode2D{I<:Integer} <: AbstractOctreeNode2D{I}
-    ID::I
-    Father::I
-    DaughterID::Array{I,1}
-    Center::AbstractPoint2D
-    SideLength::Number
-    Mass::Number
-    MassCenter::AbstractPoint2D
-    MaxSoft::Number
-    SparseDaughterID::Array{I,1} # Walk in sparse tree to improve performance
-    PDM_Mass::Number
-    PDM_MassCenter::AbstractPoint2D
-    IsAssigned::Bool
-    ParticleID::I # Refers to the particle on this leaf.
-                      # One leaf can only take one particle. Set 0 if none or more than 1
-
-    NextNode::I
-    Sibling::I
-    BitFlag::I
-end
-
-OctreeNode2D() = OctreeNode2D(1, 0, [0,0,0,0,0,0,0,0], PVector(u"kpc"), 0.0u"kpc", 0.0u"Msun",
-                        PVector(u"kpc"), 0.0u"kpc", Array{Int64,1}(), 0.0u"Msun", PVector(u"kpc"), true, 0, 0, 0, 0)
-=#
-
 struct OctreeNode{I<:Integer, C, L, M} <: AbstractOctreeNode{I}
     ID::I
     Father::I

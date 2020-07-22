@@ -4,8 +4,6 @@
     end
 
     rebuild(tree)
-    
-    update_node_len(tree)
 end
 
 @testset "Redistribute" begin
