@@ -5,8 +5,9 @@ using Distributed
 using PhysicalParticles
 using ParallelOperations
 
-pids = addprocs(4)
-@everywhere using PhysicalTrees
+pids = addprocs(2)
+addprocs(2)
+@everywhere using PhysicalTrees, BangBang
 
 @info "Initializing data"
 AstroPVectorData = [PVector(1.0, 1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, -1.0, u"kpc"),

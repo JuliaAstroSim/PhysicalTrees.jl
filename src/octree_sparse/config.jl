@@ -21,7 +21,7 @@ function OctreeConfig(
     ;
     
     ToptreeAllocFactor::Int64 = 1,
-    MaxTopnode = 500,
+    MaxTopnode = 1000,
     TopnodeFactor = 20,
 
     TreeAllocFactor::Int64 = 1,

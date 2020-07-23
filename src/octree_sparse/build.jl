@@ -99,15 +99,17 @@ function isclosepoints(len::Float64, ::Nothing, threshold::Float64)
     end
 end
 
-function assign_new_tree_leaf(tree::Octree, index::Int, parent::Int, subnode::Int)
+function assign_new_tree_leaf(tree::Octree, parent::Int)
     treenodes = tree.treenodes
     epsilon = tree.config.epsilon
     uLength = getuLength(tree.units)
 
-    treenodes[parent].DaughterID[subnode] = tree.nextfreenode
-
     MassOld = treenodes[parent].Mass
     MassCenterOld = treenodes[parent].MassCenter
+
+    subnode = find_subnode(MassCenterOld, treenodes[parent].Center)
+    treenodes[parent].DaughterID[subnode] = tree.nextfreenode
+
     treenodes[parent] = setproperties!!(treenodes[parent], IsAssigned = false,
                                                            Mass = MassOld * 0.0,
                                                            MassCenter = MassCenterOld * 0.0)
@@ -141,14 +143,13 @@ function assign_new_tree_leaf(tree::Octree, index::Int, parent::Int, subnode::In
 
 
     # Resume trying to insert the new particle at the newly created internal node
-    index = tree.nextfreenode
 
     tree.NTreenodes += 1
     tree.nextfreenode += 1
 
     allocate_tree_if_necessary(tree)
 
-    return index
+    #return tree.nextfreenode
 end
 
 function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractParticle)
@@ -185,6 +186,14 @@ function insert_data(tree::Octree)
             if !treenodes[index].IsAssigned
                 # Internal node
                 subnode = find_subnode(p, treenodes[index].Center)
+                if isclosepoints(treenodes[tree.nextfreenode].SideLength, uLength, 1.0e-3 * epsilon)
+                    subnode = trunc(Int64, 8.0 * rand()) + 1
+                    #p.GravCost += 1
+                    if subnode >= 9
+                        subnode = 8
+                    end
+                end
+
                 nn = treenodes[index].DaughterID[subnode]
 
                 if nn > 0 # branch node
@@ -201,17 +210,13 @@ function insert_data(tree::Octree)
             else
                 # We try to insert into a leaf witch already has been assigned with a particle
                 # Need to generate a new internal node at this point
-                index = assign_new_tree_leaf(tree, index, parent, subnode)
+                # Copy the old data to a new subnode
+                assign_new_tree_leaf(tree, index)
 
-                subnode = find_subnode(tree.data[index], treenodes[tree.nextfreenode].Center)
+                # continue to insert the new data
+                subnode = find_subnode(p, treenodes[tree.nextfreenode].Center)
 
-                if isclosepoints(treenodes[tree.nextfreenode].SideLength, uLength, 1.0e-3 * epsilon)
-                    subnode = trunc(Int64, 8.0 * rand()) + 1
-                    #p.GravCost += 1
-                    if subnode >= 9
-                        subnode = 8
-                    end
-                end
+                
             end
         end
     end
