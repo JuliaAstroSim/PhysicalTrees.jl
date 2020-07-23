@@ -326,7 +326,7 @@ function fill_domain_buffer(tree::Octree)
             tree.domain.local_to_go[DomainTask[no]] += 1
             push!(tree.sendbuffer[DomainTask[no]], Pair(tree.domain.peano_keys[i].first, tree.domain.peano_keys[i].second.x))
         else # leaves here
-            pushdata!(newdata, tree.domain.peano_keys[i].second.x)
+            push!(newdata, tree.domain.peano_keys[i].second.x)
             push!(newpeano, tree.domain.peano_keys[i])
         end
     end
@@ -341,7 +341,7 @@ function clear_domain_buffer(tree::Octree)
 
     for d in Iterators.flatten(values(tree.recvbuffer))
         push!(peano_keys, Pair(d.first, Ref(d.second)))
-        pushdata!(data, d.second)
+        push!(data, d.second)
     end
 
     tree.NumLocal = length(data)

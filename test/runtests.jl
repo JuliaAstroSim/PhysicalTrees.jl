@@ -28,18 +28,25 @@ UnitlessPVectorData = [PVector(1.0, 1.0, 1.0), PVector(-1.0, -1.0, -1.0),
                        PVector(1.0, 0.0, -1.0), PVector(-1.0, 0.0, 1.0),
                        PVector(0.0, 0.0, -1.0), PVector(-1.0, 0.0, 0.0)]
 
-UnitlessParticleData = [Massless() for i in 1:6]
+UnitlessParticleData = [Star() for i in 1:6]
 assign_particles(UnitlessParticleData, :Pos, UnitlessPVectorData)
 
 UnitlessPVectorData2D = [PVector(1.0, 1.0), PVector(-1.0, -1.0),
                          PVector(1.0, 0.0), PVector(-1.0, 0.0),
                          PVector(0.0, 0.0), PVector(-1.0, 1.0)]
 
-UnitlessParticleData2D = [Massless2D() for i in 1:6]
+UnitlessParticleData2D = [Star2D() for i in 1:6]
 assign_particles(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
 
-AstroParticleTree = octree(AstroParticleData, pids = pids)
-tree = AstroParticleTree
+# Test data structure
+tPV = octree(AstroPVectorData, pids = pids)
+tP = octree(AstroParticleData, pids = pids)
+tUPV = octree(UnitlessPVectorData, pids = pids)
+tUP = octree(UnitlessParticleData, pids = pids)
+
+tD = octree(Dict(:stars => UnitlessParticleData), pids = pids)
+tree = octree(Dict(:stars => AstroParticleData), pids = pids)
+
 
 # Core
 include("testParallel.jl")

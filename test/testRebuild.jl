@@ -1,7 +1,9 @@
 @testset "Rebuild" begin
-    @everywhere pids for i in eachindex(Main.PhysicalTrees.registry[$(tree.id)].data)
-        Pos = Main.PhysicalTrees.registry[$(tree.id)].data[i].Pos
-        Main.PhysicalTrees.registry[$(tree.id)].data[i] = setproperties!!(Main.PhysicalTrees.registry[$(tree.id)].data[i], Pos = 0.5 * Pos)
+    @everywhere pids for k in keys(Main.PhysicalTrees.registry[$(tree.id)].data)
+        for i in eachindex(Main.PhysicalTrees.registry[$(tree.id)].data[k])
+            Pos = Main.PhysicalTrees.registry[$(tree.id)].data[k][i].Pos
+            Main.PhysicalTrees.registry[$(tree.id)].data[k][i] = setproperties!!(Main.PhysicalTrees.registry[$(tree.id)].data[k][i], Pos = 0.5 * Pos)
+        end
     end
 
     rebuild(tree)

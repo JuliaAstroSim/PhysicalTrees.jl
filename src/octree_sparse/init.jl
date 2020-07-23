@@ -2,8 +2,8 @@ function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
     id = next_treeid()
 
     e = extent(data)
-    e.SideLength *= config.ExtentMargin
-    e.Corner = e.Center - PVector(e.SideLength, e.SideLength, e.SideLength) * 0.5
+    SideLength = e.SideLength * config.ExtentMargin
+    e = setproperties!!(e, SideLength = SideLength, Corner = e.Center - PVector(SideLength, SideLength, SideLength) * 0.5)
 
     type = datadimension(data) # to avoid empty arrays
     NumTotal = length(data)
