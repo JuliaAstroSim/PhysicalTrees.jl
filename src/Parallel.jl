@@ -110,6 +110,9 @@ function global_extent(tree::AbstractTree)
         error("Got empty global data")
     end
 
+    SideLength = e.SideLength * tree.config.ExtentMargin
+    e = setproperties!!(e, SideLength = SideLength, Corner = e.Center - PVector(SideLength, SideLength, SideLength) * 0.5)
+
     bcast(tree, :extent, e)
     tree.extent = e
 end
