@@ -53,55 +53,62 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
             hmax = 0.0 * uLength
         end
 
-        for j in 1:8
-            p = suns[j]
-            if p > 0
-                # check if we have a sibling on the same level
-                jj = 0
-                pp = 0
-                for jjj = (j+1) : 9
-                    jj = jjj
-                    if jj <= 8
-                        pp = suns[jj]
+        if treenodes[no].IsAssigned
+            treenodes[no] = setproperties!!(treenodes[no], BitFlag = 0,
+                                                           Sibling = sib,
+                                                           Father = father)
+        else
+            for j in 1:8
+                p = suns[j]
+                if p > 0
+                    # check if we have a sibling on the same level
+                    jj = 0
+                    pp = 0
+                    for jjj = (j+1) : 9
+                        jj = jjj
+                        if jj <= 8
+                            pp = suns[jj]
+                        end
+                        if pp > 0
+                            break
+                        end
                     end
-                    if pp > 0
-                        break
+
+                    if jj <= 8  # Have sibling
+                        nextsib = pp
+                    else
+                        nextsib = sib
                     end
-                end
 
-                if jj <= 8  # Have sibling
-                    nextsib = pp
-                else
-                    nextsib = sib
-                end
+                    # Depth-First
+                    update_treenodes_kernel(tree, p, nextsib, no)
 
-                # Depth-First
-                update_treenodes_kernel(tree, p, nextsib, no)
+                    if p <= MaxTreenode
+                        mass += treenodes[p].Mass
+                        s += ustrip(uMass, treenodes[p].Mass) * treenodes[p].MassCenter
+                        vs += ustrip(uMass, treenodes[p].Mass) * ExtNodes[p].vs
 
-                if p <= MaxTreenode
-                    mass += treenodes[p].Mass
-                    s += ustrip(uMass, treenodes[p].Mass) * treenodes[p].MassCenter
-                    vs += ustrip(uMass, treenodes[p].Mass) * ExtNodes[p].vs
-
-                    hmax = max(hmax, ExtNodes[p].hmax)
-                else # Pseudo-particle
-                    # Nothing to do since we had not updated pseudo data
+                        hmax = max(hmax, ExtNodes[p].hmax)
+                    else # Pseudo-particle
+                        # Nothing to do since we had not updated pseudo data
+                    end
                 end
             end
+            
+            if ustrip(mass) > 0.0
+                s /= ustrip(uMass, mass)
+                vs /= ustrip(uMass, mass)
+            else
+                s = treenodes[no].Center # Geometric center
+            end
+    
+            treenodes[no] = setproperties!!(treenodes[no], MassCenter = s,
+                                                        Mass = mass,
+                                                        BitFlag = 0,
+                                                        Sibling = sib,
+                                                        Father = father)
         end
 
-        if ustrip(mass) > 0.0
-            s /= ustrip(uMass, mass)
-            vs /= ustrip(uMass, mass)
-        else
-            s = treenodes[no].Center # Geometric center
-        end
-
-        treenodes[no] = setproperties!!(treenodes[no], MassCenter = s,
-                                                    Mass = mass,
-                                                    BitFlag = 0,
-                                                    Sibling = sib,
-                                                    Father = father)
         
         ExtNodes[no] = setproperties!!(ExtNodes[no], vs = vs, hmax = hmax)
     else # pseudo particle

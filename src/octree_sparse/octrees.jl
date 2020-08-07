@@ -63,7 +63,7 @@ function DomainData(pids::Array{Int64,1}, units)
     )
 end
 
-mutable struct Octree{T, L, I, F, C, V, M, B} <: AbstractOctree3D{T}
+mutable struct Octree{T, L, I, F, C, MC, V, M, B} <: AbstractOctree3D{T}
     id::Pair{Int64,Int64}
     isholder::Bool
 
@@ -82,7 +82,7 @@ mutable struct Octree{T, L, I, F, C, V, M, B} <: AbstractOctree3D{T}
     domain::DomainData{L, I, F, C, V, M, B}
 
     # Tree
-    treenodes::Array{OctreeNode{I, C, L, M},1}
+    treenodes::Array{OctreeNode{I, C, MC, L, M},1}
     NTreenodes::I
     nextfreenode::I
 

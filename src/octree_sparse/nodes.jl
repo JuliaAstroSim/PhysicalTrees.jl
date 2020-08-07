@@ -10,14 +10,14 @@ end
 TopNode(;bits=21) = TopNode(-1, Int128(1), Int128(0), 0, Int128(1)<<(3*bits), Int128(0), Int128(0))
 @inline length(p::T) where T <: TopNode = 1
 
-struct OctreeNode{I<:Integer, C, L, M} <: AbstractOctreeNode{I}
+struct OctreeNode{I<:Integer, C, MC, L, M} <: AbstractOctreeNode{I}
     ID::I
     Father::I
     DaughterID::MArray{Tuple{8},I,1,8}
     Center::C
     SideLength::L
     Mass::M
-    MassCenter::C
+    MassCenter::MC
     MaxSoft::L
     IsAssigned::Bool
     ParticleID::I # Refers to the particle on this leaf.
