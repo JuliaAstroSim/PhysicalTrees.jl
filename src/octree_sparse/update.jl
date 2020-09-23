@@ -13,6 +13,11 @@ getpos(p::AbstractParticle) = p.Pos
 getvel(p::AbstractParticle, ::Nothing) = p.Vel
 getvel(p::AbstractParticle, u::Units) = uconvert(u, p.Vel)
 
+"""
+    update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, father::Int64)
+
+Recursively compute total mass and mass center of each node
+"""
 function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, father::Int64)
     MaxTreenode = tree.config.MaxTreenode
     treenodes = tree.treenodes
@@ -123,14 +128,24 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
     end
 end
 
+"""
+    finish_last(tree::AbstractTree)
+
+Close the last `NextNode` indexing
+"""
 function finish_last(tree::AbstractTree)
-    if tree.last > tree.config.MaxTreenode
+    if tree.last > tree.config.MaxTreenode  # pseudo-particle
         tree.NextNodes[tree.last - tree.config.MaxTreenode] = 0
-    else
+    else # Tree node
         tree.treenodes[tree.last] = setproperties!!(tree.treenodes[tree.last], NextNode = 0)
     end
 end
 
+"""
+    update_local_data(tree::AbstractTree)
+
+Compute total mass and mass center of local nodes
+"""
 function update_local_data(tree::AbstractTree)
     tree.ExtNodes = [ExtNode(tree.units) for i in 1:tree.config.MaxTreenode]
     tree.NextNodes = zeros(Int64, tree.config.MaxTopnode)
@@ -156,6 +171,11 @@ function fill_pseudo_buffer(tree::AbstractTree)
     tree.domain.MomentsToSend = DomainMoment[tree.domain.DomainMyStart:tree.domain.DomainMyEnd]
 end
 
+"""
+    update_pseudo_data(tree::AbstractTree)
+
+Copy total mass and mass center of remote nodes to local treenodes
+"""
 function update_pseudo_data(tree::AbstractTree)
     empty!(tree.domain.MomentsToSend)
 
@@ -245,6 +265,11 @@ function flag_local_treenodes(tree::AbstractTree)
     end
 end
 
+"""
+    update(tree::AbstractTree)
+
+Compute total mass and mass center of tree nodes, and communicate results between workers
+"""
 function update(tree::AbstractTree)
     bcast(tree, update_local_data)
     bcast(tree, fill_pseudo_buffer)

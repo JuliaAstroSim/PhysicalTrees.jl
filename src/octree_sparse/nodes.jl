@@ -1,5 +1,5 @@
 struct TopNode{I<:Integer}
-    Daughter::I # There would not be topnodes more than 2^31
+    Daughter::I
     Pstart::Int128
     Blocks::Int128
     Leaf::I

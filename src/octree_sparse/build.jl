@@ -1,3 +1,8 @@
+"""
+    allocate_tree_if_necessary(tree::Octree)
+
+If `nextfreenode` getting close to the length of `treenodes`, append `treenodes` with `TreeAllocSection` empty nodes
+"""
 function allocate_tree_if_necessary(tree::Octree)
     if tree.nextfreenode >= length(tree.treenodes) - 8
         if length(tree.treenodes) <= tree.config.MaxTreenode
@@ -8,6 +13,11 @@ function allocate_tree_if_necessary(tree::Octree)
     end
 end
 
+"""
+    create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64, x::Int64, y::Int64, z::Int64)
+
+Create an octree with empty nodes in the same structure with toptree
+"""
 function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64, x::Int64, y::Int64, z::Int64)
     topnodes = tree.domain.topnodes
     treenodes = tree.treenodes
@@ -57,6 +67,26 @@ function init_treenodes(tree::Octree)
     create_empty_treenodes(tree, 1, 1, 1, 0, 0, 0)
 end
 
+"""
+    find_subnode(Pos::PVector, Center::PVector)
+    find_subnode(p::AbstractParticle, Center::AbstractPoint)
+
+From the `Center` cut the domain into eight regions, and index from 1 to 8.
+Return the domain index that `Pos` of `p.Pos` lies in.
+
+# Domain indexing
+
+| X-axis | Y-axis | Z-axis | Indexing |
+| ------ | ------ | ------ | -------- |
+| - | - | - | 1 |
+| + | - | - | 2 |
+| - | + | - | 3 |
+| + | + | - | 4 |
+| - | - | + | 5 |
+| + | - | + | 6 |
+| - | + | + | 7 |
+| + | + | + | 8 |
+"""
 function find_subnode(Pos::PVector, Center::PVector)
     subnode = 1
     if Pos.x > Center.x
@@ -73,6 +103,11 @@ end
 
 find_subnode(p::AbstractParticle, Center::AbstractPoint) = find_subnode(p.Pos, Center)
 
+"""
+    check_inbox(Pos::PVector, Center::PVector, SideLength::Number)
+
+Chech whether `Pos` is inside the box, which is centered at `Center` with sidelength `SideLength`
+"""
 function check_inbox(Pos::PVector, Center::PVector, SideLength::Number)
     half_len = SideLength * 0.5
     if Pos.x < Center.x - half_len || Pos.x > Center.x + half_len ||
@@ -99,6 +134,13 @@ function isclosepoints(len::Float64, ::Nothing, threshold::Float64)
     end
 end
 
+"""
+    assign_new_tree_leaf(tree::Octree, parent::Int)
+
+When trying to insert into a leaf witch already has been assigned with a particle,
+first generate a new internal node at this point and copy the old data to a new subnode,
+then continue to insert the new data in the next routine.
+"""
 function assign_new_tree_leaf(tree::Octree, parent::Int)
     treenodes = tree.treenodes
     epsilon = tree.config.epsilon
@@ -114,6 +156,7 @@ function assign_new_tree_leaf(tree::Octree, parent::Int)
                                                            Mass = MassOld * 0.0,
                                                            MassCenter = MassCenterOld * 0.0)
 
+    # Update sidelength and center
     treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode] , SideLength = 0.5 * treenodes[parent].SideLength)
     lenhalf = 0.25 * treenodes[parent].SideLength
 
@@ -135,7 +178,7 @@ function assign_new_tree_leaf(tree::Octree, parent::Int)
         centerZ = treenodes[parent].Center.z - lenhalf
     end
 
-    # copy the old particle data
+    # Copy the old particle data
     treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], IsAssigned = true,
                                                                                  Center = PVector(centerX, centerY, centerZ),
                                                                                  Mass = MassOld,
@@ -152,6 +195,12 @@ function assign_new_tree_leaf(tree::Octree, parent::Int)
     #return tree.nextfreenode
 end
 
+"""
+    assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractParticle)
+    assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractPoint)
+
+When inserting to an empty node, simply copy data and change `IsAssigned` to `true`
+"""
 function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractParticle)
     tree.treenodes[index] = setproperties!!(tree.treenodes[index], Mass = p.Mass,
                                                                    MassCenter = p.Pos,
@@ -162,6 +211,11 @@ function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractPoint)
     tree.treenodes[index] = setproperties!!(tree.treenodes[index], MassCenter = p, IsAssigned = true)
 end
 
+"""
+    insert_data(tree::Octree)
+
+Insert all data to the octree one by one.
+"""
 function insert_data(tree::Octree)
     DomainCorner = tree.extent.Corner
     data = tree.data
@@ -222,6 +276,11 @@ function insert_data(tree::Octree)
     end
 end
 
+"""
+    insert_data_pseudo(tree::Octree)
+
+Insert remote toptree leaves.
+"""
 function insert_data_pseudo(tree::Octree)
     tree.domain.DomainMoment = [DomainNode(tree.units) for i in 1:tree.domain.NTopLeaves]
 
@@ -263,6 +322,14 @@ function insert_data_pseudo(tree::Octree)
     end
 end
 
+"""
+    build(tree::Octree)
+
+Procedures to build an octree:
+1. Allocate tree node memories and initialize
+2. Insert local data
+3. Insert remote toptree leaves
+"""
 function build(tree::Octree)
     bcast(tree, init_treenodes)
     bcast(tree, insert_data)

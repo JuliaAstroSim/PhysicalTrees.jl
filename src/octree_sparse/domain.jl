@@ -1,3 +1,11 @@
+"""
+    init_peano(tree::Octree)
+
+1. Count local number of data
+2. Compute `domain.DomainFac`
+3. Compute peano keys of local data
+4. Sort peano keys and store in `domain.peano_keys`
+"""
 function init_peano(tree::Octree)
     tree.NumLocal = countdata(tree.data)
 
@@ -8,6 +16,11 @@ function init_peano(tree::Octree)
     tree.domain.peano_keys = peano
 end
 
+"""
+    init_topnode(tree::Octree)
+
+Allocate `domain.topnodes`, set up the first topnode and count `NTopnodes` from 1
+"""
 function init_topnode(tree::Octree)
     tree.domain.topnodes = [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection]
     tree.domain.NTopnodes = 1
@@ -19,6 +32,7 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
     if topnodes[node].Size >= 8
         topnodes[node] = setproperties!!(topnodes[node], Daughter = tree.domain.NTopnodes + 1)
 
+        # Set up daughter topnodes
         daughtersize = div(topnodes[node].Size , 8)
         for i in 0:7
             if tree.domain.NTopnodes >= length(topnodes) - 8
@@ -42,6 +56,7 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
             tree.domain.NTopnodes += 1
         end
 
+        # Count particles located in daughter topnodes
         for p in topnodes[node].Pstart : topnodes[node].Pstart + topnodes[node].Count - 1
             bin = floor(Int64, (tree.domain.peano_keys[p].first - startkey) / (topnodes[node].Size / 8))
             if bin < 0 || bin > 7
@@ -61,9 +76,14 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
                 split_topnode_local_kernel(tree, sub, topnodes[sub].StartKey)
             end
         end
-    end # if topnodes[node].size >
+    end # if topnodes[node].size >= 8
 end
 
+"""
+    count_leaves(tree::Octree)
+
+Count local toptree leaves
+"""
 function count_leaves(tree::Octree)
     topnodes = tree.domain.topnodes
     tree.domain.StartKeys = Array{Int128,1}()
@@ -85,6 +105,7 @@ function split_topnode_local(tree::Octree)
     count_leaves(tree)
 end
 
+#TODO Parallel sorting?
 function key_sort_bcast(tree::Octree)
     SC = [tree.domain.StartKeys tree.domain.Counts]
     key_counts = sortslices(SC, dims=1)
@@ -110,6 +131,7 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
     if topnodes[node].Size >= 8
         topnodes[node] = setproperties!!(topnodes[node], Daughter = tree.domain.NTopnodes + 1)
 
+        # Set up daughter topnodes
         daughtersize = div(topnodes[node].Size , 8)
         for i in 0:7
             if tree.domain.NTopnodes >= length(topnodes) - 8
@@ -132,6 +154,7 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
             tree.domain.NTopnodes += 1
         end
 
+        # Count particles located in daughter topnodes
         for p in topnodes[node].Pstart : topnodes[node].Pstart + topnodes[node].Blocks - 1
             #if p == 849
             #    @show topnodes[node].Pstart + topnodes[node].Blocks - 1
@@ -158,9 +181,14 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
                 split_topnode_kernel(tree, sub, topnodes[sub].StartKey)
             end
         end
-    end # if topnodes[node].size >
+    end # if topnodes[node].size >= 8
 end
 
+"""
+    walk_toptree(tree::Octree, no::Int64)
+
+Count toptree leaves and store leaf id
+"""
 function walk_toptree(tree::Octree, no::Int64)
     if tree.domain.topnodes[no].Daughter == -1
         tree.domain.NTopLeaves += 1
@@ -298,6 +326,11 @@ function shift_split(tree::Octree)
     
 end
 
+"""
+    fill_domain_buffer(tree::Octree)
+
+Send particle alongside its peano key to the designated process.
+"""
 function fill_domain_buffer(tree::Octree)
     topnodes = tree.domain.topnodes
     DomainTask = tree.domain.DomainTask
@@ -351,9 +384,11 @@ function clear_domain_buffer(tree::Octree)
 end
 
 function split_domain(tree::Octree)
+    # Initialization, compute local peano keys and allocate array of local topnodes
     bcast(tree, init_peano)
     bcast(tree, init_topnode)
 
+    # Split local topnodes according to work load, collect block info
     bcast(tree, split_topnode_local)
 
     NTopnodes = sum(tree, :domain, :NTopnodes)
@@ -364,14 +399,20 @@ function split_domain(tree::Octree)
     tree.domain.Counts = reduce(vcat, gather(tree, :domain, :Counts))
     key_sort_bcast(tree)
 
+    # Now build a global topnode tree and split again according to collected global counts
     bcast(tree, reinit_topnode)
-
     bcast(tree, split_topnode)
 
-    tree.domain.DomainFac = getfrom(tree, first(tree.pids), :domain, :DomainFac)
-    tree.domain.NTopnodes = getfrom(tree, first(tree.pids), :domain, :NTopnodes)
-    tree.domain.NTopLeaves = getfrom(tree, first(tree.pids), :domain, :NTopLeaves)
+    if myid() == tree.pids[1]
+        sample_id = tree.pids[1]
+    else
+        sample_id = tree.pids[2]
+    end
+    tree.domain.DomainFac = getfrom(tree, sample_id, :domain, :DomainFac)
+    tree.domain.NTopnodes = getfrom(tree, sample_id, :domain, :NTopnodes)
+    tree.domain.NTopLeaves = getfrom(tree, sample_id, :domain, :NTopLeaves)
 
+    # Sum work load, now we are ready to split computation domain
     bcast(tree, sum_cost)
 
     tree.domain.DomainWork = sum(gather(tree, :domain, :DomainWork))
@@ -380,11 +421,12 @@ function split_domain(tree::Octree)
     bcast(tree, :domain, :DomainCount, tree.domain.DomainWork)
 
     bcast(tree, find_split)
-    tree.domain.DomainStartList = getfrom(tree, first(tree.pids), :domain, :DomainStartList)
-    tree.domain.DomainEndList = getfrom(tree, first(tree.pids), :domain, :DomainEndList)
+    tree.domain.DomainStartList = getfrom(tree, sample_id, :domain, :DomainStartList)
+    tree.domain.DomainEndList = getfrom(tree, sample_id, :domain, :DomainEndList)
 
     bcast(tree, shift_split)
 
+    # Send particles and peano keys to designated processes 
     bcast(tree, fill_domain_buffer)
     bcast(tree, send_buffer)
     bcast(tree, clear_domain_buffer)

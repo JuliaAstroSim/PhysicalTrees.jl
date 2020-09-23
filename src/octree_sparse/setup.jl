@@ -1,3 +1,23 @@
+"""
+    octree(data)
+
+Build an octree from `data`, which is either point data or particle data.
+
+# Keywords
+
+| Keyword | Usage | Default value |
+| `units` | Set internal units | `uAstro` |
+| `config` | | `OctreeConfig(length(data))` |
+| `pids` | Array of workers to distribute the tree. The master process could be included | workers() |
+
+# Main workflow
+
+1. `init_octree`
+2. `split_domain`
+3. `build`
+4. `update`
+"""
+
 function octree(data,
                ;
                units = uAstro,
@@ -50,6 +70,13 @@ function update_DomainTask_pids(tree::Octree, pids::Array{Int64,N}, newid::Pair{
     tree.pids = pids
 end
 
+"""
+    redistribute(tree::Octree, pids::Array{Int64,N})
+
+When restarting a simulation, the octree might be redistributed on different workers compared to the original simulation,
+thus causing wrong domain indexing.
+`redistribute` would transfer tree data to correct workers.
+"""
 function redistribute(tree::Octree, pids::Array{Int64,N}) where N
     if length(tree.pids) != length(pids)
         error("The tree has to be redistributed to equallly numbered processes!")

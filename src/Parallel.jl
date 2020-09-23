@@ -60,6 +60,11 @@ end
 
 extent(tree::AbstractTree) = return extent(tree.data)
 
+"""
+    global_extent(tree::AbstractTree)
+
+Compute global extent of all particles and broadcast the result.
+"""
 function global_extent(tree::AbstractTree)
     es = gather(tree, extent)
 
