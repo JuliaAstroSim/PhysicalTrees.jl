@@ -39,7 +39,7 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
                 if length(topnodes) <= tree.config.MaxTopnode
                     append!(topnodes, [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection])
                 else
-                    error("Running out of topnodes, please increase the MaxTopNodes in Config")
+                    error("Running out of topnodes, please increase the MaxTopNodes (= ", tree.config.MaxTopnode,") in Config")
                 end
             end
 
@@ -403,7 +403,7 @@ function split_domain(tree::Octree)
     bcast(tree, reinit_topnode)
     bcast(tree, split_topnode)
 
-    if myid() == tree.pids[1]
+    if myid() == tree.pids[1] || length(tree.pids) == 1
         sample_id = tree.pids[1]
     else
         sample_id = tree.pids[2]
