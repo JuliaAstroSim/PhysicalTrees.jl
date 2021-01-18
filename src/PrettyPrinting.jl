@@ -19,6 +19,20 @@ end
 
 Base.show(io::IO, tree::AbstractTree) = summary(io, tree)
 
+function Base.show(io::IO, n::OctreeNode)
+    print(io, n.Father, " -> ", n.ID, ": ", n.DaughterID,
+              ", Center = ", n.Center,
+              ", SideLength = ", n.SideLength,
+              ", Mass = ", n.Mass,
+              ", MassCenter = ", n.MassCenter,
+              ", MaxSoft = ", n.MaxSoft,
+              ", IsAssigned = ", n.IsAssigned,
+              ", ParticleID = ", n.ParticleID,
+              ", NextNode = ", n.NextNode,
+              ", Sibling = ", n.Sibling,
+              ", BitFlag = ", n.BitFlag)
+end
+
 function Base.show(io::IO, config::OctreeConfig)
     print(
         io,
