@@ -185,6 +185,7 @@ function assign_new_tree_leaf(tree::Octree, parent::Int)
                                                            Mass = MassOld * 0.0,
                                                            MassCenter = MassCenterOld * 0.0)
     # Move old particle data to the new node
+    allocate_tree_if_necessary(tree)
     treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], IsAssigned = true, ParticleID = treenodes[parent].ParticleID,
                                                                                  Center = SubnodeCenter,
                                                                                  Mass = MassOld,
@@ -279,6 +280,7 @@ function insert_data(tree::Octree)
                     # The target Daughter is not assigned, but this is a branch node
                     # So, attach a new node
                     treenodes[index].DaughterID[subnode] = tree.nextfreenode
+                    allocate_tree_if_necessary(tree)
                     assign_data_to_tree_leaf(tree, tree.nextfreenode, p)
 
                     SubnodeCenter = subnodeCenter(tree, index, subnode)

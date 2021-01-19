@@ -1,7 +1,7 @@
 summary(io::IO, tree::AbstractTree) = print(io, summary(tree))
 
 function summary(tree::AbstractTree)
-    return string(typeof(tree), " defined on worker ", tree.id.first,
+    return string("\nTree defined on worker ", tree.id.first,
              ":\n    Distributed on workers: ", tree.pids,
              "\n                     units: ", tree.units,
              "\n        Number of topnodes: ", tree.domain.NTopnodes,
@@ -56,7 +56,7 @@ function datainfo(tree::AbstractTree)
     return string(
         "\n  -------------------------- Data info --------------------------",
         "\n                         total: ", tree.NumTotal,
-        "\n                          type: ", typeof(tree.data),
+        #"\n                          type: ", typeof(tree.data),
         "\n                          cuts: ", gather(tree, :NumLocal),
         "\n              last communicate: ", local_to_go_string,
     )
