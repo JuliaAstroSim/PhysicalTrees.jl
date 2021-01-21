@@ -62,6 +62,8 @@ export
 
     @inline real(p::T) where T <: AbstractTree = p
     @inline length(p::T) where T <: AbstractTree = 1
+    @inline iterate(p::T) where T <: AbstractTree = (p,nothing)
+    @inline iterate(p::T,st) where T <: AbstractTree = nothing
 
     abstract type AbstractOctree2D{T} <: AbstractTree2D{T} end
     abstract type AbstractOctree3D{T} <: AbstractTree3D{T} end

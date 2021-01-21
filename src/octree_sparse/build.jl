@@ -35,7 +35,9 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
                     treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], SideLength = 0.5 * treenodes[no].SideLength,
                                                        Center = treenodes[no].Center + PVector((2 * i - 1) * 0.25 * treenodes[no].SideLength,
                                                                                                (2 * j - 1) * 0.25 * treenodes[no].SideLength,
-                                                                                               (2 * k - 1) * 0.25 * treenodes[no].SideLength))
+                                                                                               (2 * k - 1) * 0.25 * treenodes[no].SideLength),
+                                                                                               ID = tree.nextfreenode,
+                                                                                               Father = no)
 
                     if topnodes[topnodes[top].Daughter + sub].Daughter == -1
                         # this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree
@@ -134,30 +136,8 @@ function isclosepoints(len::Float64, ::Nothing, threshold::Float64)
     end
 end
 
-"""
-    assign_new_tree_leaf(tree::Octree, parent::Int)
-
-When trying to insert into a leaf witch already has been assigned with a particle,
-first generate a new internal node at this point and copy the old data to a new subnode,
-then continue to insert the new data in the next routine.
-"""
-function assign_new_tree_leaf(tree::Octree, parent::Int)
+function subnodeCenter(tree::Octree, parent::Int, subnode::Int)
     treenodes = tree.treenodes
-    epsilon = tree.config.epsilon
-    uLength = getuLength(tree.units)
-
-    MassOld = treenodes[parent].Mass
-    MassCenterOld = treenodes[parent].MassCenter
-
-    subnode = find_subnode(MassCenterOld, treenodes[parent].Center)
-    treenodes[parent].DaughterID[subnode] = tree.nextfreenode
-
-    treenodes[parent] = setproperties!!(treenodes[parent], IsAssigned = false,
-                                                           Mass = MassOld * 0.0,
-                                                           MassCenter = MassCenterOld * 0.0)
-
-    # Update sidelength and center
-    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode] , SideLength = 0.5 * treenodes[parent].SideLength)
     lenhalf = 0.25 * treenodes[parent].SideLength
 
     if (subnode - 1) & 1 > 0
@@ -178,12 +158,44 @@ function assign_new_tree_leaf(tree::Octree, parent::Int)
         centerZ = treenodes[parent].Center.z - lenhalf
     end
 
-    # Copy the old particle data
-    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], IsAssigned = true,
-                                                                                 Center = PVector(centerX, centerY, centerZ),
-                                                                                 Mass = MassOld,
-                                                                                 MassCenter = MassCenterOld)
+    return PVector(centerX, centerY, centerZ)
+end
 
+"""
+    assign_new_tree_leaf(tree::Octree, parent::Int)
+
+When trying to insert into a leaf witch already has been assigned with a particle,
+first generate a new internal node at this point and copy the old data to a new subnode,
+then continue to insert the new data in the next routine.
+"""
+function assign_new_tree_leaf(tree::Octree, parent::Int)
+    treenodes = tree.treenodes
+    epsilon = tree.config.epsilon
+    uLength = getuLength(tree.units)
+
+    MassOld = treenodes[parent].Mass
+    MassCenterOld = treenodes[parent].MassCenter
+    
+    subnode = find_subnode(MassCenterOld, treenodes[parent].Center)
+    SubnodeCenter = subnodeCenter(tree, parent, subnode)
+
+    treenodes[parent].DaughterID[subnode] = tree.nextfreenode # No conflict
+
+    treenodes[parent] = setproperties!!(treenodes[parent], IsAssigned = false,
+                                                           Mass = MassOld * 0.0,
+                                                           MassCenter = MassCenterOld * 0.0)
+    # Move old particle data to the new node
+    allocate_tree_if_necessary(tree)
+    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], IsAssigned = true, ParticleID = treenodes[parent].ParticleID,
+                                                                                 Center = SubnodeCenter,
+                                                                                 Mass = MassOld,
+                                                                                 MassCenter = MassCenterOld,
+                                                                                 Father = parent,
+                                                                                 ID = tree.nextfreenode,
+                                                                                 SideLength = 0.5 * treenodes[parent].SideLength
+                                                                                 )
+
+    #@show "MOVE", subnode, parent, treenodes[parent]
 
     # Resume trying to insert the new particle at the newly created internal node
 
@@ -202,13 +214,23 @@ end
 When inserting to an empty node, simply copy data and change `IsAssigned` to `true`
 """
 function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractParticle)
+    #@show "assign", index, tree.nextfreenode, p
     tree.treenodes[index] = setproperties!!(tree.treenodes[index], Mass = p.Mass,
                                                                    MassCenter = p.Pos,
-                                                                   IsAssigned = true)
+                                                                   IsAssigned = true,
+                                                                   ParticleID = p.ID,
+                                                                   #ID = index,
+                                                                   #Father = parent
+                                                                   )
 end
 
 function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractPoint)
-    tree.treenodes[index] = setproperties!!(tree.treenodes[index], MassCenter = p, IsAssigned = true)
+    tree.treenodes[index] = setproperties!!(tree.treenodes[index],
+                                            MassCenter = p, 
+                                            IsAssigned = true,
+                                            #ID = index,
+                                            #Father = parent
+                                            )
 end
 
 """
@@ -240,8 +262,10 @@ function insert_data(tree::Octree)
             if !treenodes[index].IsAssigned
                 # Internal node
                 subnode = find_subnode(p, treenodes[index].Center)
-                if isclosepoints(treenodes[tree.nextfreenode].SideLength, uLength, 1.0e-3 * epsilon)
+                if isclosepoints(treenodes[index].SideLength / 2.0, uLength, 1.0e-3 * epsilon)
                     subnode = trunc(Int64, 8.0 * rand()) + 1
+                    println("Close particle filling into a random node: ", p.ID)
+                    #@show "CLOSE", treenodes[index].SideLength, subnode
                     #p.GravCost += 1
                     if subnode >= 9
                         subnode = 8
@@ -250,14 +274,29 @@ function insert_data(tree::Octree)
 
                 nn = treenodes[index].DaughterID[subnode]
 
-                if nn > 0 # branch node
+                if nn > 0 # Daughter node is already occupied
                     parent = index
                     index = nn
+                elseif sum(treenodes[index].DaughterID) > 0
+                    # The target Daughter is not assigned, but this is a branch node
+                    # So, attach a new node
+                    treenodes[index].DaughterID[subnode] = tree.nextfreenode
+                    allocate_tree_if_necessary(tree)
+                    assign_data_to_tree_leaf(tree, tree.nextfreenode, p)
+
+                    SubnodeCenter = subnodeCenter(tree, index, subnode)
+                    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], Center = SubnodeCenter,
+                                                                    SideLength = 0.5 * treenodes[index].SideLength,
+                                                                    Father = index,
+                                                                    ID = tree.nextfreenode)
+                    #@show "BRANCH", treenodes[tree.nextfreenode]
+                    tree.NTreenodes += 1
+                    tree.nextfreenode += 1
+                    break
                 else
                     # version 1 - here we have found an empty slot where we can attach the new particle as a leaf
                     # version 2 - we copy information of the particle to this leaf node
                     assign_data_to_tree_leaf(tree, index, p)
-
                     break
                 end
                 # in the next loop, the particle will be settled
@@ -269,8 +308,6 @@ function insert_data(tree::Octree)
 
                 # continue to insert the new data
                 subnode = find_subnode(p, treenodes[tree.nextfreenode].Center)
-
-                
             end
         end
     end

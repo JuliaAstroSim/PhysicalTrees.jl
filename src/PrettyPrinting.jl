@@ -1,7 +1,7 @@
 summary(io::IO, tree::AbstractTree) = print(io, summary(tree))
 
 function summary(tree::AbstractTree)
-    return string(typeof(tree), " defined on worker ", tree.id.first,
+    return string("\nTree defined on worker ", tree.id.first,
              ":\n    Distributed on workers: ", tree.pids,
              "\n                     units: ", tree.units,
              "\n        Number of topnodes: ", tree.domain.NTopnodes,
@@ -18,6 +18,20 @@ function summary(tree::AbstractTree)
 end
 
 Base.show(io::IO, tree::AbstractTree) = summary(io, tree)
+
+function Base.show(io::IO, n::OctreeNode)
+    print(io, n.Father, " -> ", n.ID, ": ", n.DaughterID,
+              ", Center = ", n.Center,
+              ", SideLength = ", n.SideLength,
+              ", Mass = ", n.Mass,
+              ", MassCenter = ", n.MassCenter,
+              ", MaxSoft = ", n.MaxSoft,
+              ", IsAssigned = ", n.IsAssigned,
+              ", ParticleID = ", n.ParticleID,
+              ", NextNode = ", n.NextNode,
+              ", Sibling = ", n.Sibling,
+              ", BitFlag = ", n.BitFlag)
+end
 
 function Base.show(io::IO, config::OctreeConfig)
     print(
@@ -42,7 +56,7 @@ function datainfo(tree::AbstractTree)
     return string(
         "\n  -------------------------- Data info --------------------------",
         "\n                         total: ", tree.NumTotal,
-        "\n                          type: ", typeof(tree.data),
+        #"\n                          type: ", typeof(tree.data),
         "\n                          cuts: ", gather(tree, :NumLocal),
         "\n              last communicate: ", local_to_go_string,
     )
