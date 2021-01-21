@@ -44,8 +44,8 @@ tP = octree(AstroParticleData, pids = pids)
 tUPV = octree(UnitlessPVectorData, pids = pids)
 tUP = octree(UnitlessParticleData, pids = pids)
 
-tD = octree(Dict(:stars => UnitlessParticleData), pids = pids)
-tree = octree(Dict(:stars => AstroParticleData), pids = pids)
+tD = octree(Dict("stars" => UnitlessParticleData), pids = pids)
+tree = octree(Dict("stars" => AstroParticleData), pids = pids)
 
 
 # Core

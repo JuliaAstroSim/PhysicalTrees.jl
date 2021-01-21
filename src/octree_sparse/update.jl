@@ -147,7 +147,9 @@ end
 Compute total mass and mass center of local nodes
 """
 function update_local_data(tree::AbstractTree)
-    tree.ExtNodes = [ExtNode(tree.units) for i in 1:tree.config.MaxTreenode]
+    uLength = getuLength(tree.units)
+    uVel = getuVel(tree.units)
+    tree.ExtNodes = [ExtNode(uLength, uVel) for i in 1:tree.config.MaxTreenode]
     tree.NextNodes = zeros(Int64, tree.config.MaxTopnode)
 
     tree.last = 0

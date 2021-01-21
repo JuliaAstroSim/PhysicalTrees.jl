@@ -61,5 +61,5 @@ struct ExtNode{L, V}
     hmax::L
     vs::V  # Center-of-mass velocity
 end
-ExtNode(::Nothing) = ExtNode(0.0, PVector())
-ExtNode(u::Array) = ExtNode(0.0 * getuLength(u), PVector(getuLength(u) / getuTime(u)))
+ExtNode(::Nothing, ::Nothing) = ExtNode(0.0, PVector())
+ExtNode(uLength::Units, uVel::Units) = ExtNode(0.0 * uLength, PVector(uVel))

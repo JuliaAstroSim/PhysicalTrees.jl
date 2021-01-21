@@ -97,6 +97,8 @@ mutable struct Octree{T, L, I, F, C, MC, V, M, B} <: AbstractOctree3D{T}
 end
 
 function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1})
+    uLength = getuLength(units)
+    uVel = getuVel(units)
     return Octree(
         id, isholder, units,
         config, extent, data, pids, NumTotal, 0,
@@ -108,7 +110,7 @@ function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConf
         0,
 
         [0 for i in 1:config.MaxTopnode],
-        [ExtNode(units) for i in 1:config.MaxTreenode],
+        [ExtNode(uLength, uVel) for i in 1:config.MaxTreenode],
         0,
 
         Dict{Int64, Any}(),

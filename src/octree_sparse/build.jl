@@ -228,8 +228,9 @@ function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractPoint)
     tree.treenodes[index] = setproperties!!(tree.treenodes[index],
                                             MassCenter = p, 
                                             IsAssigned = true,
-                                            ID = index,
-                                            Father = parent)
+                                            #ID = index,
+                                            #Father = parent
+                                            )
 end
 
 """
