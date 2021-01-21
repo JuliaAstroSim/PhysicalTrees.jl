@@ -4,7 +4,6 @@ __precompile__(true)
 
 using Unitful, UnitfulAstro
 using Distributed
-using DataStructures
 using StaticArrays
 using BangBang
 
