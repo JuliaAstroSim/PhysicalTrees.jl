@@ -86,15 +86,12 @@ Count local toptree leaves
 """
 function count_leaves(tree::Octree)
     topnodes = tree.domain.topnodes
-    tree.domain.StartKeys = Array{Int128,1}()
-    tree.domain.Counts = Array{Int128,1}()
-    StartKeys = tree.domain.StartKeys
-    Counts = tree.domain.Counts
+    sc = tree.domain.sc
+    empty!(sc)
     for i in 1:tree.domain.NTopnodes
         if topnodes[i].Daughter == -1
             tree.domain.NTopLeaves += 1
-            push!(StartKeys, topnodes[i].StartKey)
-            push!(Counts, topnodes[i].Count)
+            push!(sc, SC(topnodes[i].StartKey, topnodes[i].Count))
         end
     end
 end
@@ -107,13 +104,10 @@ end
 
 #TODO Parallel sorting?
 function key_sort_bcast(tree::Octree)
-    SC = [tree.domain.StartKeys tree.domain.Counts]
-    key_counts = sortslices(SC, dims=1)
-    tree.domain.StartKeys = key_counts[:, 1]
-    tree.domain.Counts = key_counts[:, 2]
+    sc = tree.domain.sc
+    sort!(sc, by = x->x.StartKey)
 
-    bcast(tree, :domain, :StartKeys, tree.domain.StartKeys)
-    bcast(tree, :domain, :Counts, tree.domain.Counts)
+    bcast(tree, :domain, :sc, tree.domain.sc)
 end
 
 function reinit_topnode(tree::Octree)
@@ -159,9 +153,9 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
             #if p == 849
             #    @show topnodes[node].Pstart + topnodes[node].Blocks - 1
             #end
-            bin = floor(Int64, (tree.domain.StartKeys[p] - startkey) / (topnodes[node].Size / 8))
+            bin = floor(Int64, (tree.domain.sc[p].StartKey - startkey) / (topnodes[node].Size / 8))
             if bin < 0 || bin > 7
-                @show (tree.domain.StartKeys[p] - startkey) / (topnodes[node].Size / 8)
+                @show (tree.domain.sc[p].StartKey - startkey) / (topnodes[node].Size / 8)
                 @show p
                 @show topnodes[node]
                 error("something odd has happened here. bin = ", bin)
@@ -171,7 +165,7 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
             if topnodes[sub].Blocks == 0
                 topnodes[sub] = setproperties!!(topnodes[sub], Pstart = p)
             end
-            topnodes[sub] = setproperties!!(topnodes[sub], Count = tree.domain.Counts[p] + topnodes[sub].Count,
+            topnodes[sub] = setproperties!!(topnodes[sub], Count = tree.domain.sc[p].Count + topnodes[sub].Count,
                                                            Blocks = topnodes[sub].Blocks + 1)
         end
 
@@ -395,8 +389,7 @@ function split_domain(tree::Octree)
     bcast(tree, :domain, :NTopnodes, NTopnodes)
     sum(tree, :domain, :NTopLeaves)
 
-    tree.domain.StartKeys = reduce(vcat, gather(tree, :domain, :StartKeys))
-    tree.domain.Counts = reduce(vcat, gather(tree, :domain, :Counts))
+    tree.domain.sc = reduce(vcat, gather(tree, :domain, :sc))
     key_sort_bcast(tree)
 
     # Now build a global topnode tree and split again according to collected global counts

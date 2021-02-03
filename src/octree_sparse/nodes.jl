@@ -10,15 +10,15 @@ end
 TopNode(;bits=21) = TopNode(-1, Int128(1), Int128(0), 0, Int128(1)<<(3*bits), Int128(0), Int128(0))
 @inline length(p::T) where T <: TopNode = 1
 
-struct OctreeNode{I<:Integer, C, MC, L, M} <: AbstractOctreeNode{I}
+struct OctreeNode{I<:Integer, POS, LEN, MASS} <: AbstractOctreeNode{I}
     ID::I
     Father::I
     DaughterID::MArray{Tuple{8},I,1,8}
-    Center::C
-    SideLength::L
-    Mass::M
-    MassCenter::MC
-    MaxSoft::L
+    Center::POS
+    SideLength::LEN
+    Mass::MASS
+    MassCenter::POS
+    MaxSoft::LEN
     IsAssigned::Bool
     ParticleID::I # Refers to the particle on this leaf.
                       # One leaf can only take one particle. Set 0 if none or more than 1
@@ -39,11 +39,11 @@ function OctreeNode(u::Array)
 end
 
 
-struct DomainNode{C, V, M, L, B}
-    MassCenter::C
-    Vel::V
-    Mass::M
-    MaxSoft::L
+struct DomainNode{POS, VEL, MASS, LEN, B}
+    MassCenter::POS
+    Vel::VEL
+    Mass::MASS
+    MaxSoft::LEN
     BitFlag::B # Int
 end
 
@@ -57,9 +57,9 @@ function DomainNode(u::Array)
 end
 
 
-struct ExtNode{L, V}
-    hmax::L
-    vs::V  # Center-of-mass velocity
+struct ExtNode{LEN, VEL}
+    hmax::LEN
+    vs::VEL  # Center-of-mass velocity
 end
 ExtNode(::Nothing, ::Nothing) = ExtNode(0.0, PVector())
 ExtNode(uLength::Units, uVel::Units) = ExtNode(0.0 * uLength, PVector(uVel))

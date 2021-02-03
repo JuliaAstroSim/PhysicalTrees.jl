@@ -20,7 +20,7 @@ Notes:
 1. `NumDataBase` is the decimal base of total number of data points.
 2. Use `ToptreeAllocFactor` and `TreeAllocFactor` to control `ToptreeAllocSection` and `TreeAllocSection` respectively.
 """
-struct OctreeConfig{I<:Integer, T<:AbstractFloat}
+struct OctreeConfig{I<:Integer}
     ToptreeAllocSection::I
     MaxTopnode::I
     TopnodeFactor::Int64
@@ -28,7 +28,7 @@ struct OctreeConfig{I<:Integer, T<:AbstractFloat}
     TreeAllocSection::I
     MaxTreenode::I
 
-    ExtentMargin::T
+    ExtentMargin::Float64
 
     PeanoBits3D::Int64
     PeanoBits2D::Int64

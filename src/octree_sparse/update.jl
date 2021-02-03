@@ -29,10 +29,7 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
     uMass = getuMass(tree.units)
     uVel = getuVel(tree.units)
 
-    mass = nothing
-    s = nothing
-    vs = nothing
-    hmax = nothing
+    ZeroValues = zerovalues(tree.units)
 
     if no <= MaxTreenode # internal node
         suns = deepcopy(treenodes[no].DaughterID)
@@ -46,17 +43,10 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
         end
         tree.last = no
 
-        if isnothing(tree.units)
-            mass = 0.0
-            s = PVector()
-            vs = PVector()
-            hmax = 0.0
-        else
-            mass = 0.0 * uMass
-            s = PVector(uLength)
-            vs = PVector(uVel)
-            hmax = 0.0 * uLength
-        end
+        mass = ZeroValues.mass
+        s = ZeroValues.pos
+        vs = ZeroValues.vel
+        hmax = ZeroValues.len
 
         if treenodes[no].IsAssigned
             treenodes[no] = setproperties!!(treenodes[no], BitFlag = 0,
