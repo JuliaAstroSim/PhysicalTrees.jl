@@ -12,7 +12,7 @@ function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
     e = setproperties!!(e, SideLength = SideLength, Corner = e.Center - PVector(SideLength, SideLength, SideLength) * 0.5)
 
     type = datadimension(data) # to avoid empty arrays
-    NumTotal = length(data)
+    NumTotal = countdata(data)
 
     # Send to remote workers
     @sync @distributed for i in 1:length(pids)

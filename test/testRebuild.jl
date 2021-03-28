@@ -10,11 +10,11 @@
 end
 
 @testset "Redistribute" begin
-    t = octree(AstroPVectorData, pids = [2,3])
+    t = octree(AstroParticleData, pids = [2,3])
     t = redistribute(t, [4,5])
     @test sum(t.pids) == 9
 
-    t = octree(AstroPVectorData, pids = [1,2])
+    t = octree(AstroParticleData, pids = [1,2])
     t = redistribute(t, [1,3])
     @test sum(t.pids) == 4
 end

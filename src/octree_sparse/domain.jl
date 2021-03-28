@@ -111,11 +111,11 @@ function key_sort_bcast(tree::Octree)
 end
 
 function reinit_topnode(tree::Octree)
-    tree.domain.NTopLeaves = 0
-
     tree.domain.topnodes = [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection]
     tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Count = Int128(tree.NumTotal))
     tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Blocks = Int128(tree.domain.NTopLeaves))
+    
+    tree.domain.NTopLeaves = 0
 
     tree.domain.NTopnodes = 1
 end
