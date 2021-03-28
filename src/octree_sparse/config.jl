@@ -45,7 +45,7 @@ function OctreeConfig(
     TopnodeFactor = 20,
 
     TreeAllocFactor::Int64 = 1,
-    MaxTreenode = 100000,
+    MaxTreenode = NumData > 1000 ? NumData * 10 : 10000,
 
     ExtentMargin = 1.001,
 
@@ -55,7 +55,7 @@ function OctreeConfig(
     epsilon = 1.0e-4,
 )
 
-    NumDataBase = 10^(trunc(Int64, log10(NumData)))
+    NumDataBase = div(10^(trunc(Int64, log10(NumData))), 10)
     if NumDataBase < 10
         NumDataBase = 10
     end

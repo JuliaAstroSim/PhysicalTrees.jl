@@ -5,7 +5,7 @@ If `nextfreenode` getting close to the length of `treenodes`, append `treenodes`
 """
 function allocate_tree_if_necessary(tree::Octree)
     if tree.nextfreenode >= length(tree.treenodes) - 8
-        if length(tree.treenodes) <= tree.config.MaxTreenode
+        if length(tree.treenodes) < tree.config.MaxTreenode
             append!(tree.treenodes, [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection])
         else
             error("Running out of tree nodes in creating empty nodes, please increase MaxTreenode in Config")

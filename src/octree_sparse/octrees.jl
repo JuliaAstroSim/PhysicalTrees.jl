@@ -118,8 +118,8 @@ function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConf
         0,
         0,
 
-        [0 for i in 1:config.MaxTopnode],
-        [ExtNode(uLength, uVel) for i in 1:config.MaxTreenode],
+        [0 for i in 1:0],
+        [ExtNode(uLength, uVel) for i in 1:0],
         0,
 
         Dict{Int64, Any}(),
