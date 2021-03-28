@@ -88,6 +88,7 @@ function count_leaves(tree::Octree)
     topnodes = tree.domain.topnodes
     sc = tree.domain.sc
     empty!(sc)
+    tree.domain.NTopLeaves = 0
     for i in 1:tree.domain.NTopnodes
         if topnodes[i].Daughter == -1
             tree.domain.NTopLeaves += 1
