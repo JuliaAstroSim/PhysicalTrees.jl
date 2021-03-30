@@ -13,7 +13,7 @@ TopNode(;bits=21) = TopNode(-1, Int128(1), Int128(0), 0, Int128(1)<<(3*bits), In
 struct OctreeNode{I<:Integer, POS, LEN, MASS} <: AbstractOctreeNode{I}
     ID::I
     Father::I
-    DaughterID::MArray{Tuple{8},I,1,8}
+    DaughterID::MVector{8,I}
     Center::POS
     SideLength::LEN
     Mass::MASS
@@ -28,13 +28,13 @@ struct OctreeNode{I<:Integer, POS, LEN, MASS} <: AbstractOctreeNode{I}
     BitFlag::I
 end
 
-OctreeNode(::Nothing) = OctreeNode(1, 0, MArray{Tuple{8}}([0,0,0,0,0,0,0,0]), PVector(), 0.0, 0.0,
+OctreeNode(::Nothing) = OctreeNode(1, 0, MVector{8}([0,0,0,0,0,0,0,0]), PVector(), 0.0, 0.0,
                         PVector(), 0.0, false, 0, 0, 0, 0)
 
 function OctreeNode(u::Array)
     uLength = getuLength(u)
     uMass = getuMass(u)
-    return OctreeNode(1, 0, MArray{Tuple{8}}([0,0,0,0,0,0,0,0]), PVector(uLength), 0.0uLength, 0.0uMass,
+    return OctreeNode(1, 0, MVector{8}([0,0,0,0,0,0,0,0]), PVector(uLength), 0.0uLength, 0.0uMass,
                         PVector(uLength), 0.0uLength, false, 0, 0, 0, 0)
 end
 
