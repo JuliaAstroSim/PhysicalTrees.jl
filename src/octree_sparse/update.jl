@@ -29,7 +29,7 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
     uMass = getuMass(tree.units)
     uVel = getuVel(tree.units)
 
-    ZeroValues = zerovalues(tree.units)
+    ZeroValues = ZeroValue(tree.units)
 
     if no <= MaxTreenode # internal node
         suns = deepcopy(treenodes[no].DaughterID)

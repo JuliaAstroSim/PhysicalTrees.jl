@@ -8,7 +8,7 @@ function allocate_tree_if_necessary(tree::Octree)
         if length(tree.treenodes) < tree.config.MaxTreenode
             append!(tree.treenodes, [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection])
         else
-            error("Running out of tree nodes in creating empty nodes, please increase MaxTreenode in Config")
+            error("Running out of tree nodes (=$(tree.config.MaxTreenode)) in creating empty nodes, please increase MaxTreenode in Config $(functionloc(OctreeConfig, (Int,)))")
         end
     end
 end
