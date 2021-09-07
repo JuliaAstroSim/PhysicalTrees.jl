@@ -10,7 +10,7 @@
     bcast(tree, p->(p.last = 2))
     @test sum(gather(tree, x->x-1, :last)) == 2
 
-    scatter(tree, [1, 2], :last)
+    scatterto(tree, [1, 2], :last)
     @test sum(gather(tree, :last)) == 3
     @test reduce(tree, max, :last) == 2
 

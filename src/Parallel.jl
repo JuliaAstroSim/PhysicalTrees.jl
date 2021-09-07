@@ -25,8 +25,8 @@ bcast(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = bcas
 bcast(tree::AbstractTree, f::Function, expr1, expr2, mod::Module = PhysicalTrees) = bcast(tree.pids, f, :(registry[$(tree.id)].$expr1.$expr2), mod)
 bcast(tree::AbstractTree, f::Function, mod::Module = PhysicalTrees) = bcast(tree.pids, f, :(registry[$(tree.id)]), mod)
 
-scatter(tree::AbstractTree, data::Array, expr, mod::Module = PhysicalTrees) = scatter(tree.pids, data, :(registry[$(tree.id)].$expr), mod)
-scatter(tree::AbstractTree, data::Array, expr1, expr2, mod::Module = PhysicalTrees) = scatter(tree.pids, data, :(registry[$(tree.id)].$expr1.$expr2), mod)
+scatterto(tree::AbstractTree, data::Array, expr, mod::Module = PhysicalTrees) = scatterto(tree.pids, data, :(registry[$(tree.id)].$expr), mod)
+scatterto(tree::AbstractTree, data::Array, expr1, expr2, mod::Module = PhysicalTrees) = scatterto(tree.pids, data, :(registry[$(tree.id)].$expr1.$expr2), mod)
 
 reduce(tree::AbstractTree, f::Function, expr, mod::Module = PhysicalTrees) = reduce(f, tree.pids, :(registry[$(tree.id)].$expr), mod)
 reduce(tree::AbstractTree, f::Function, expr1, expr2, mod::Module = PhysicalTrees) = reduce(f, tree.pids, :(registry[$(tree.id)].$expr1.$expr2), mod)
