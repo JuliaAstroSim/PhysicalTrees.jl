@@ -245,7 +245,7 @@ function insert_data(tree::Octree)
     treenodes = tree.treenodes
     epsilon = tree.config.epsilon
     uLength = getuLength(tree.units)
-    for p in Iterators.flatten(values(data))
+    for p in data
         key = peanokey(p, DomainCorner, tree.domain.DomainFac)
 
         no = 1

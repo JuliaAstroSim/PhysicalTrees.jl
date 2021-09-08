@@ -2,16 +2,18 @@ module PhysicalTrees
 
 __precompile__(true)
 
+using Reexport
 using Unitful, UnitfulAstro
 using Distributed
 using StaticArrays
 using BangBang
+using StructArrays
 
 import Base: +, -, show, real, iterate, length, append!, sum
 import Unitful.Units
 import Distributed: procs
 
-using PhysicalParticles
+@reexport using PhysicalParticles
 import PhysicalParticles: extent
 
 using ParallelOperations

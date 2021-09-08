@@ -14,29 +14,29 @@ AstroPVectorData = [PVector(1.0, 1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, -1.0, u"
                     PVector(1.0, 0.0, -1.0, u"kpc"), PVector(-1.0, 0.0, 1.0, u"kpc"),
                     PVector(0.0, 0.0, -1.0, u"kpc"), PVector(-1.0, 0.0, 0.0, u"kpc")]
 
-AstroParticleData = Dict("stars" => [Star(uAstro) for i in 1:6])
-assign_particles(AstroParticleData["stars"], :Pos, AstroPVectorData)
+AstroParticleData = StructArray(Star(uAstro) for i in 1:6)
+assign_particles(AstroParticleData, :Pos, AstroPVectorData)
 
 AstroPVectorData2D = [PVector(1.0, 1.0, u"kpc"), PVector(-1.0, -1.0, u"kpc"),
                       PVector(1.0, 0.0, u"kpc"), PVector(-1.0, 0.0, u"kpc"),
                       PVector(0.0, 0.0, u"kpc"), PVector(-1.0, 1.0, u"kpc")]
 
-AstroParticleData2D = Dict("stars" => [Star2D(uAstro) for i in 1:6])
-assign_particles(AstroParticleData2D["stars"], :Pos, AstroPVectorData2D)
+AstroParticleData2D = StructArray(Star2D(uAstro) for i in 1:6)
+assign_particles(AstroParticleData2D, :Pos, AstroPVectorData2D)
 
 UnitlessPVectorData = [PVector(1.0, 1.0, 1.0), PVector(-1.0, -1.0, -1.0),
                        PVector(1.0, 0.0, -1.0), PVector(-1.0, 0.0, 1.0),
                        PVector(0.0, 0.0, -1.0), PVector(-1.0, 0.0, 0.0)]
 
-UnitlessParticleData = Dict("stars" => [Star() for i in 1:6])
-assign_particles(UnitlessParticleData["stars"], :Pos, UnitlessPVectorData)
+UnitlessParticleData = StructArray(Star() for i in 1:6)
+assign_particles(UnitlessParticleData, :Pos, UnitlessPVectorData)
 
 UnitlessPVectorData2D = [PVector(1.0, 1.0), PVector(-1.0, -1.0),
                          PVector(1.0, 0.0), PVector(-1.0, 0.0),
                          PVector(0.0, 0.0), PVector(-1.0, 1.0)]
 
-UnitlessParticleData2D = Dict("stars" => [Star2D() for i in 1:6])
-assign_particles(UnitlessParticleData2D["stars"], :Pos, UnitlessPVectorData2D)
+UnitlessParticleData2D = StructArray(Star2D() for i in 1:6)
+assign_particles(UnitlessParticleData2D, :Pos, UnitlessPVectorData2D)
 
 # Test data structure
 
@@ -49,7 +49,6 @@ include("testParallel.jl")
 include("testPeano.jl")
 
 # Tree
-include("testUpdate.jl")
 
 # Stability
 include("testEdge.jl")

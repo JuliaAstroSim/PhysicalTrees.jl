@@ -12,7 +12,7 @@ function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
     e = setproperties!!(e, SideLength = SideLength, Corner = e.Center - PVector(SideLength, SideLength, SideLength) * 0.5)
 
     type = datadimension(data) # to avoid empty arrays
-    NumTotal = countdata(data)
+    NumTotal = length(data)
 
     # Send to remote workers
     @sync @distributed for i in 1:length(pids)
@@ -23,7 +23,7 @@ function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
     if haskey(registry, id) # Master process is already included in pids, set it as holder
         registry[id].isholder = true
     else # Not included. Need to init an empty tree
-        init_octree(id, true, units, config, e, empty(data), NumTotal, pids, type)
+        init_octree(id, true, units, config, e, data[1:0], NumTotal, pids, type)
     end
 
     return registry[id]

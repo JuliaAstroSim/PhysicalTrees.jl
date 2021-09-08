@@ -1,12 +1,7 @@
 @testset "Rebuild" begin
-    @everywhere pids for k in keys(Main.PhysicalTrees.registry[$(tree.id)].data)
-        for i in eachindex(Main.PhysicalTrees.registry[$(tree.id)].data[k])
-            Pos = Main.PhysicalTrees.registry[$(tree.id)].data[k][i].Pos
-            Main.PhysicalTrees.registry[$(tree.id)].data[k][i] = setproperties!!(Main.PhysicalTrees.registry[$(tree.id)].data[k][i], Pos = 0.5 * Pos)
-        end
-    end
+    @everywhere tree.pids Main.PhysicalTrees.registry[$(tree.id)].data.Pos .*= 0.5
 
-    rebuild(tree)
+    @test isnothing(rebuild(tree))
 end
 
 @testset "Redistribute" begin

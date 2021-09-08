@@ -7,7 +7,7 @@
 4. Sort peano keys and store in `domain.peano_keys`
 """
 function init_peano(tree::Octree)
-    tree.NumLocal = countdata(tree.data)
+    tree.NumLocal = length(tree.data)
 
     tree.domain.DomainFac = (1 << tree.config.PeanoBits3D) / tree.extent.SideLength
 
@@ -203,7 +203,6 @@ end
 
 function sum_cost(tree::Octree)
     topnodes = tree.domain.topnodes
-    data = tree.data
     tree.domain.DomainWork = zeros(Float64, tree.domain.NTopLeaves)
     tree.domain.DomainCount = zeros(Int64, tree.domain.NTopLeaves)
     for i in 1:tree.NumLocal
@@ -340,7 +339,7 @@ function fill_domain_buffer(tree::Octree)
         tree.recvbuffer[p] = Array{Pair{Int128, Any}, 1}()
     end
 
-    newdata = empty(tree.data)
+    newdata = tree.data[1:0]
     newpeano = empty(tree.domain.peano_keys)
 
     for i in 1:tree.NumLocal

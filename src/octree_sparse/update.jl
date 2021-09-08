@@ -1,18 +1,3 @@
-getmass(p::AbstractPoint, ::Nothing) = 0.0
-getmass(p::AbstractPoint, u::Units) = 0.0 * u
-getpos(p::AbstractPoint) = p
-getvel(p::AbstractPoint, ::Nothing) = zero(p)
-getvel(p::AbstractPoint, u::Units) = zero(p) * (one(p.x) * u)
-
-getmass(p::Massless2D, ::Nothing) = 0.0
-getmass(p::Massless, ::Nothing) = 0.0
-
-getmass(p::AbstractParticle, ::Nothing) = p.Mass
-getmass(p::AbstractParticle, u::Units) = uconvert(u, p.Mass)
-getpos(p::AbstractParticle) = p.Pos
-getvel(p::AbstractParticle, ::Nothing) = p.Vel
-getvel(p::AbstractParticle, u::Units) = uconvert(u, p.Vel)
-
 """
     update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, father::Int64)
 

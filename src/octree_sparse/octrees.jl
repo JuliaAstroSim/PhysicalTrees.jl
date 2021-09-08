@@ -72,16 +72,16 @@ function DomainData(pids::Array{Int64,1}, units)
     )
 end
 
-mutable struct Octree{P, Len, Len_1, I, F, POS, VEL, MASS, B} <: AbstractOctree3D{P}
+mutable struct Octree{A, U, Len, Len_1, I, F, POS, VEL, MASS, B} <: AbstractOctree3D{A}
     id::Pair{Int64,Int64}
     isholder::Bool
 
-    units
+    units::U
 
     config::OctreeConfig{I}
     extent::AbstractExtent3D
 
-    data::Dict{String,Vector{P}}
+    data::A
     pids::Array{Int64,1}
 
     NumTotal::I
@@ -105,7 +105,7 @@ mutable struct Octree{P, Len, Len_1, I, F, POS, VEL, MASS, B} <: AbstractOctree3
     timers::Dict{String, UInt64}
 end
 
-function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data::Dict{String,Vector{T}}, NumTotal::Int64, pids::Array{Int64,1}) where T<:Union{AbstractPoint, AbstractParticle}
+function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) where T<:Union{AbstractPoint, AbstractParticle}
     uLength = getuLength(units)
     uVel = getuVel(units)
     return Octree(
