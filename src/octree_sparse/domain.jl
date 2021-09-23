@@ -387,7 +387,8 @@ function split_domain(tree::Octree)
 
     NTopnodes = sum(tree, :domain, :NTopnodes)
     bcast(tree, :domain, :NTopnodes, NTopnodes)
-    sum(tree, :domain, :NTopLeaves)
+    NTopLeaves = sum(tree, :domain, :NTopLeaves)
+    bcast(tree, :domain, :NTopLeaves, NTopLeaves)
 
     tree.domain.sc = reduce(vcat, gather(tree, :domain, :sc))
     key_sort_bcast(tree)
