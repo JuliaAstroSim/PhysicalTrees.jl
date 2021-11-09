@@ -94,3 +94,16 @@ function send_buffer(tree::AbstractTree)
         tree.recvbuffer[target] = Distributed.remotecall_eval(PhysicalTrees, target, :(registry[$(tree.id)].sendbuffer[$src]))
     end
 end
+
+function clear_local()
+    empty!(registry)
+end
+
+"""
+    function clear(pids = procs())
+
+Clear distributed memories in `PhysicalTrees.registry`
+"""
+function clear(pids = procs())
+    bcast(pids, clear_local)
+end
