@@ -17,13 +17,11 @@ function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
     # Send to remote workers
     @sync @distributed for i in 1:length(pids)
         d = split_data(data, i, length(pids))
-        Distributed.remotecall_eval(PhysicalTrees, pids[i], :(init_octree($id, false, $units, $config, $e, $d, $NumTotal, $pids, $type)))
+        Distributed.remotecall_eval(PhysicalTrees, pids[i], :(init_octree($id, $units, $config, $e, $d, $NumTotal, $pids, $type)))
     end
 
-    if haskey(registry, id) # Master process is already included in pids, set it as holder
-        registry[id].isholder = true
-    else # Not included. Need to init an empty tree
-        init_octree(id, true, units, config, e, data[1:0], NumTotal, pids, type)
+    if !haskey(registry, id) # Master process is not included in pids, init an empty tree
+        init_octree(id, units, config, e, data[1:0], NumTotal, pids, type)
     end
 
     return registry[id]

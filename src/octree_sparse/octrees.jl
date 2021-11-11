@@ -74,7 +74,6 @@ end
 
 mutable struct Octree{A, U, Len, Len_1, I, F, POS, VEL, MASS, B} <: AbstractOctree3D{A}
     id::Pair{Int64,Int64}
-    isholder::Bool
 
     units::U
 
@@ -105,11 +104,11 @@ mutable struct Octree{A, U, Len, Len_1, I, F, POS, VEL, MASS, B} <: AbstractOctr
     timers::Dict{String, UInt64}
 end
 
-function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) where T<:Union{AbstractPoint, AbstractParticle}
+function Octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) where T<:Union{AbstractPoint, AbstractParticle}
     uLength = getuLength(units)
     uVel = getuVel(units)
     return Octree(
-        id, isholder, units,
+        id, units,
         config, extent, data, pids, NumTotal, 0,
 
         DomainData(pids, units),
@@ -133,14 +132,14 @@ function Octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConf
     )
 end
 
-function init_octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)
+function init_octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)
     if isnothing(units)
         error("Please define units!")
     else
-        registry[id] = Octree(id, isholder, units, config, extent, data, NumTotal, pids)
+        registry[id] = Octree(id, units, config, extent, data, NumTotal, pids)
     end
 end
 
-function init_octree(id::Pair{Int64,Int64}, isholder::Bool, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Unitless3D)
-    registry[id] = Octree(id, isholder, nothing, config, extent, data, NumTotal, pids)
+function init_octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Unitless3D)
+    registry[id] = Octree(id, nothing, config, extent, data, NumTotal, pids)
 end
