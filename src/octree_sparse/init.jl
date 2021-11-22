@@ -15,7 +15,7 @@ function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
     NumTotal = length(data)
 
     # Send to remote workers
-    @sync @distributed for i in 1:length(pids)
+    @sync for i in 1:length(pids)
         d = split_data(data, i, length(pids))
         Distributed.remotecall_eval(PhysicalTrees, pids[i], :(init_octree($id, $units, $config, $e, $d, $NumTotal, $pids, $type)))
     end
