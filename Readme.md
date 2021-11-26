@@ -1,6 +1,7 @@
 # PhysicalTrees.jl
 
 [![codecov](https://codecov.io/gh/JuliaAstroSim/PhysicalTrees.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaAstroSim/PhysicalTrees.jl)
+[![][docs-dev-img]][docs-dev-url]
 
 Distributed Octree for Nbody simulation.
 
@@ -14,27 +15,37 @@ or
 ]add https://github.com/JuliaAstroSim/PhysicalTrees.jl
 ```
 
-## Usage
+## Installation
 
 ```julia
-using Distributed
-addprocs(1)
-
-@everywhere using PhysicalTrees
-
-# discrete points
-pos = [PVector(1.0, 1.0, 1.0), PVector(-1.0, -1.0, -1.0),
-       PVector(1.0, 0.0, -1.0), PVector(-1.0, 0.0, 1.0),
-       PVector(0.0, 0.0, -1.0), PVector(-1.0, 0.0, 0.0)]
-
-# Build octree from point data
-tree1 = octree(pos)
-
-# Or, build octree from particles
-particles = [Massless() for i in 1:6]
-assign_particles(particles, :Pos, pos)
-tree2 = octree(particles, pids = [2])
+]add PhysicalTrees
 ```
+
+or
+
+```julia
+using Pkg; Pkg.add("PhysicalTrees")
+```
+
+or
+
+```julia
+using Pkg; Pkg.add("https://github.com/JuliaAstroSim/PhysicalTrees.jl")
+```
+
+To test the Package:
+```julia
+]test PhysicalTrees
+```
+
+## Documentation
+
+- [**Dev**][docs-dev-url] &mdash; *documentation of the in-development version.*
+
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://juliaastrosim.github.io/PhysicalTrees.jl/dev
+
+For beginners, it is highly recommended to read the [documentation of PhysicalParticles.jl](https://juliaastrosim.github.io/PhysicalParticles.jl/dev/).
 
 ## References
 
