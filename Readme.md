@@ -5,16 +5,6 @@
 
 Distributed Octree for Nbody simulation.
 
-## Install
-
-```julia
-]add PhysicalTrees
-```
-or
-```julia
-]add https://github.com/JuliaAstroSim/PhysicalTrees.jl
-```
-
 ## Installation
 
 ```julia
@@ -46,10 +36,6 @@ To test the Package:
 [docs-dev-url]: https://juliaastrosim.github.io/PhysicalTrees.jl/dev
 
 For beginners, it is highly recommended to read the [documentation of PhysicalParticles.jl](https://juliaastrosim.github.io/PhysicalParticles.jl/dev/).
-
-## References
-
-- [Gadget2 by V. Springel](https://wwwmpa.mpa-garching.mpg.de/gadget/)
 
 ## Package ecosystem
 
