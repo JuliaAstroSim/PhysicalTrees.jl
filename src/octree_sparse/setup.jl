@@ -53,6 +53,7 @@ function rebuild(tree::Octree)
     begin_timer(tree, "tree_update")
     update(tree)
     end_timer(tree, "tree_update")
+    return tree
 end
 
 function update_DomainTask_pids(tree::Octree, pids::Array{Int64,N}, newid::Pair{Int64, Int64}) where N

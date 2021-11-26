@@ -1,7 +1,7 @@
 @testset "Rebuild" begin
     @everywhere tree.pids Main.PhysicalTrees.registry[$(tree.id)].data.Pos .*= 0.5
 
-    @test isnothing(rebuild(tree))
+    @test !isnothing(rebuild(tree))
 end
 
 @testset "Redistribute" begin

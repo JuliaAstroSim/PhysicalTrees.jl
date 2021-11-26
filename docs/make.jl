@@ -37,7 +37,12 @@ makedocs(
         "Home" => "index.md",
         "Manual" => Any[
             "manual/guide.md",
+            "manual/octree.md",
         ],
+        "Library" => Any[
+            "lib/Types.md",
+            "lib/Methods.md",
+        ]
         #"contributing.md",
     ],
     #strict = !("strict=false" in ARGS),
