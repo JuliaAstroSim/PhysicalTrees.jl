@@ -67,10 +67,10 @@ function update_DomainTask_pids(tree::Octree, pids::Array{Int64,N}, newid::Pair{
         end
     end
 
-    tree.id = newid
-    tree.pids = pids
+    tree = setproperties!!(tree, id = newid, pids = pids)
 end
 
+#=
 """
     redistribute(tree::Octree, pids::Array{Int64,N})
 
@@ -104,11 +104,12 @@ function redistribute(tree::Octree, pids::Array{Int64,N}) where N
     # If the holder is not in pids, its id has not beed updated in the transfering
     if !(oldid.first in tree.pids)
         registry[newid] = registry[oldid]
-        registry[newid].id = newid # This would affect the old one either, so we cannot simply unregister tree
-        registry[newid].pids = pids
+
+        # This would affect the old one either, so we cannot simply unregister tree
+        registry[newid] = setproperties!!(registry[newid], id = newid, pids = pids)
         pop!(registry, oldid)
     end
 
-
     return registry[newid]
 end
+=#

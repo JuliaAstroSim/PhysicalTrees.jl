@@ -1,20 +1,20 @@
 @testset "Parallelism" begin
     @test sum(procs(tree)) == sum(pids)
 
-    sendto(tree, pids[1], :last, 10)
-    @test getfrom(tree, pids[1], :last) == 10
+    sendto(tree, pids[1], :mutable, :last, 10)
+    @test getfrom(tree, pids[1], :mutable, :last) == 10
 
-    bcast(tree, :last, 1)
-    @test sum(gather(tree, :last)) == 2
+    bcast(tree, :mutable, :last, 1)
+    @test sum(gather(tree, :mutable, :last)) == 2
 
-    bcast(tree, p->(p.last = 2))
-    @test sum(gather(tree, x->x-1, :last)) == 2
+    bcast(tree, p->(p.mutable.last = 2))
+    @test sum(gather(tree, x->x-1, :mutable, :last)) == 2
 
-    scatterto(tree, [1, 2], :last)
-    @test sum(gather(tree, :last)) == 3
-    @test reduce(tree, max, :last) == 2
+    scatterto(tree, [1, 2], :mutable, :last)
+    @test sum(gather(tree, :mutable, :last)) == 3
+    @test reduce(tree, max, :mutable, :last) == 2
 
-    allreduce(tree, max, :last)
-    allsum(tree, :last)
-    @test sum(tree, :last) == 8
+    allreduce(tree, max, :mutable, :last, :last)
+    allsum(tree, :mutable, :last, :last)
+    @test sum(tree, :mutable, :last) == 8
 end

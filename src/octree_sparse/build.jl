@@ -4,7 +4,7 @@
 If `nextfreenode` getting close to the length of `treenodes`, append `treenodes` with `TreeAllocSection` empty nodes
 """
 function allocate_tree_if_necessary(tree::Octree)
-    if tree.nextfreenode >= length(tree.treenodes) - 8
+    if tree.mutable.nextfreenode >= length(tree.treenodes) - 8
         if length(tree.treenodes) < tree.config.MaxTreenode
             append!(tree.treenodes, [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection])
         else
@@ -31,24 +31,24 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
                     sub = Int64(7 & peanokey((x << 1) + i, (y << 1) + j, (z << 1) + k, bits = bits))
                     count = 1 + i + 2 * j + 4 * k
 
-                    treenodes[no].DaughterID[count] = tree.nextfreenode
-                    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], SideLength = 0.5 * treenodes[no].SideLength,
+                    treenodes[no].DaughterID[count] = tree.mutable.nextfreenode
+                    treenodes[tree.mutable.nextfreenode] = setproperties!!(treenodes[tree.mutable.nextfreenode], SideLength = 0.5 * treenodes[no].SideLength,
                                                        Center = treenodes[no].Center + PVector((2 * i - 1) * 0.25 * treenodes[no].SideLength,
                                                                                                (2 * j - 1) * 0.25 * treenodes[no].SideLength,
                                                                                                (2 * k - 1) * 0.25 * treenodes[no].SideLength),
-                                                                                               ID = tree.nextfreenode,
+                                                                                               ID = tree.mutable.nextfreenode,
                                                                                                Father = no)
 
                     if topnodes[topnodes[top].Daughter + sub].Daughter == -1
                         # this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree
-                        tree.domain.DomainNodeIndex[topnodes[topnodes[top].Daughter + sub].Leaf] = tree.nextfreenode
+                        tree.domain.DomainNodeIndex[topnodes[topnodes[top].Daughter + sub].Leaf] = tree.mutable.nextfreenode
                     end
 
-                    tree.NTreenodes += 1
-                    tree.nextfreenode += 1
+                    tree.mutable.NTreenodes += 1
+                    tree.mutable.nextfreenode += 1
 
                     create_empty_treenodes(tree,
-                                            tree.nextfreenode - 1, tree.domain.topnodes[top].Daughter + sub,
+                                            tree.mutable.nextfreenode - 1, tree.domain.topnodes[top].Daughter + sub,
                                             bits + 1, 2 * x + i, 2 * y + j, 2 * z + k)
                 end
             end
@@ -57,14 +57,14 @@ function create_empty_treenodes(tree::Octree, no::Int64, top::Int64, bits::Int64
 end
 
 function init_treenodes(tree::Octree)
-    tree.domain.DomainNodeIndex = zeros(Int64, tree.domain.NTopLeaves)
+    tree.domain.DomainNodeIndex = zeros(Int64, tree.domain.mutable.NTopLeaves)
 
     tree.treenodes = [OctreeNode(tree.units) for i in 1:tree.config.TreeAllocSection]
-    tree.treenodes[1] = setproperties!!(tree.treenodes[1], Center = tree.extent.Center,
-                                                           SideLength = tree.extent.SideLength)
+    tree.treenodes[1] = setproperties!!(tree.treenodes[1], Center = tree.mutable.extent.Center,
+                                                           SideLength = tree.mutable.extent.SideLength)
 
-    tree.NTreenodes = 1
-    tree.nextfreenode = 2
+    tree.mutable.NTreenodes = 1
+    tree.mutable.nextfreenode = 2
 
     create_empty_treenodes(tree, 1, 1, 1, 0, 0, 0)
 end
@@ -179,19 +179,19 @@ function assign_new_tree_leaf(tree::Octree, parent::Int)
     subnode = find_subnode(MassCenterOld, treenodes[parent].Center)
     SubnodeCenter = subnodeCenter(tree, parent, subnode)
 
-    treenodes[parent].DaughterID[subnode] = tree.nextfreenode # No conflict
+    treenodes[parent].DaughterID[subnode] = tree.mutable.nextfreenode # No conflict
 
     treenodes[parent] = setproperties!!(treenodes[parent], IsAssigned = false,
                                                            Mass = MassOld * 0.0,
                                                            MassCenter = MassCenterOld * 0.0)
     # Move old particle data to the new node
     allocate_tree_if_necessary(tree)
-    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], IsAssigned = true, ParticleID = treenodes[parent].ParticleID,
+    treenodes[tree.mutable.nextfreenode] = setproperties!!(treenodes[tree.mutable.nextfreenode], IsAssigned = true, ParticleID = treenodes[parent].ParticleID,
                                                                                  Center = SubnodeCenter,
                                                                                  Mass = MassOld,
                                                                                  MassCenter = MassCenterOld,
                                                                                  Father = parent,
-                                                                                 ID = tree.nextfreenode,
+                                                                                 ID = tree.mutable.nextfreenode,
                                                                                  SideLength = 0.5 * treenodes[parent].SideLength
                                                                                  )
 
@@ -199,12 +199,12 @@ function assign_new_tree_leaf(tree::Octree, parent::Int)
 
     # Resume trying to insert the new particle at the newly created internal node
 
-    tree.NTreenodes += 1
-    tree.nextfreenode += 1
+    tree.mutable.NTreenodes += 1
+    tree.mutable.nextfreenode += 1
 
     allocate_tree_if_necessary(tree)
 
-    #return tree.nextfreenode
+    #return tree.mutable.nextfreenode
 end
 
 """
@@ -214,7 +214,7 @@ end
 When inserting to an empty node, simply copy data and change `IsAssigned` to `true`
 """
 function assign_data_to_tree_leaf(tree::Octree, index::Int, p::AbstractParticle)
-    #@show "assign", index, tree.nextfreenode, p
+    #@show "assign", index, tree.mutable.nextfreenode, p
     tree.treenodes[index] = setproperties!!(tree.treenodes[index], Mass = p.Mass,
                                                                    MassCenter = p.Pos,
                                                                    IsAssigned = true,
@@ -239,14 +239,14 @@ end
 Insert all data to the octree one by one.
 """
 function insert_data(tree::Octree)
-    DomainCorner = tree.extent.Corner
+    DomainCorner = tree.mutable.extent.Corner
     data = tree.data
     topnodes = tree.domain.topnodes
     treenodes = tree.treenodes
     epsilon = tree.config.epsilon
     uLength = getuLength(tree.units)
     for p in data
-        key = peanokey(p, DomainCorner, tree.domain.DomainFac)
+        key = peanokey(p, DomainCorner, tree.domain.mutable.DomainFac)
 
         no = 1
         while topnodes[no].Daughter >= 0
@@ -280,18 +280,18 @@ function insert_data(tree::Octree)
                 elseif sum(treenodes[index].DaughterID) > 0
                     # The target Daughter is not assigned, but this is a branch node
                     # So, attach a new node
-                    treenodes[index].DaughterID[subnode] = tree.nextfreenode
+                    treenodes[index].DaughterID[subnode] = tree.mutable.nextfreenode
                     allocate_tree_if_necessary(tree)
-                    assign_data_to_tree_leaf(tree, tree.nextfreenode, p)
+                    assign_data_to_tree_leaf(tree, tree.mutable.nextfreenode, p)
 
                     SubnodeCenter = subnodeCenter(tree, index, subnode)
-                    treenodes[tree.nextfreenode] = setproperties!!(treenodes[tree.nextfreenode], Center = SubnodeCenter,
+                    treenodes[tree.mutable.nextfreenode] = setproperties!!(treenodes[tree.mutable.nextfreenode], Center = SubnodeCenter,
                                                                     SideLength = 0.5 * treenodes[index].SideLength,
                                                                     Father = index,
-                                                                    ID = tree.nextfreenode)
-                    #@show "BRANCH", treenodes[tree.nextfreenode]
-                    tree.NTreenodes += 1
-                    tree.nextfreenode += 1
+                                                                    ID = tree.mutable.nextfreenode)
+                    #@show "BRANCH", treenodes[tree.mutable.nextfreenode]
+                    tree.mutable.NTreenodes += 1
+                    tree.mutable.nextfreenode += 1
                     break
                 else
                     # version 1 - here we have found an empty slot where we can attach the new particle as a leaf
@@ -307,7 +307,7 @@ function insert_data(tree::Octree)
                 assign_new_tree_leaf(tree, index)
 
                 # continue to insert the new data
-                subnode = find_subnode(p, treenodes[tree.nextfreenode].Center)
+                subnode = find_subnode(p, treenodes[tree.mutable.nextfreenode].Center)
             end
         end
     end
@@ -319,17 +319,17 @@ end
 Insert remote toptree leaves.
 """
 function insert_data_pseudo(tree::Octree)
-    tree.domain.DomainMoment = [DomainNode(tree.units) for i in 1:tree.domain.NTopLeaves]
+    tree.domain.DomainMoment = [DomainNode(tree.units) for i in 1:tree.domain.mutable.NTopLeaves]
 
     MaxTreenode = tree.config.MaxTreenode
     treenodes = tree.treenodes
-    for i in 1:tree.domain.NTopLeaves
+    for i in 1:tree.domain.mutable.NTopLeaves
         @inbounds tree.domain.DomainMoment[i] = setproperties!!(tree.domain.DomainMoment[i], Mass = 0.0 * tree.domain.DomainMoment[i].Mass,
                                                                     MassCenter = treenodes[tree.domain.DomainNodeIndex[i]].Center)
     end
 
-    for i in 1:tree.domain.NTopLeaves
-        if i < tree.domain.DomainMyStart || i > tree.domain.DomainMyEnd
+    for i in 1:tree.domain.mutable.NTopLeaves
+        if i < tree.domain.mutable.DomainMyStart || i > tree.domain.mutable.DomainMyEnd
             index = 1
 
             while true

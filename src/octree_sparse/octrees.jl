@@ -3,12 +3,17 @@ struct SC{T}
     Count::T
 end
 
-mutable struct DomainData{LEN, LEN_1, I, F, POS, VEL, MASS, B}
-    topnodes::Array{TopNode{I},1}
+mutable struct DomainInfoMutable{I,LEN_1}
     NTopnodes::I
     NTopLeaves::I
 
     DomainFac::LEN_1
+    DomainMyStart::I
+    DomainMyEnd::I
+end
+
+struct DomainData{LEN, LEN_1, I, F, POS, VEL, MASS, B}
+    topnodes::Array{TopNode{I},1}
     
     peano_keys::Array{Pair{Int128, Ref},1}
 
@@ -24,15 +29,14 @@ mutable struct DomainData{LEN, LEN_1, I, F, POS, VEL, MASS, B}
     list_load::Array{I,1}
     list_work::Array{F,1}
 
-    DomainMyStart::I
-    DomainMyEnd::I
-
     DomainNodeIndex::Array{I,1}
 
     DomainMoment::Array{DomainNode{POS, VEL, MASS, LEN, B},1}
     MomentsToSend::Array{DomainNode{POS, VEL, MASS, LEN, B},1}
 
     local_to_go::Dict{I, I}
+
+    mutable::DomainInfoMutable{I, LEN_1}
 end
 
 function DomainData(pids::Array{Int64,1}, units)
@@ -44,9 +48,6 @@ function DomainData(pids::Array{Int64,1}, units)
 
     return DomainData(
         Array{TopNode{Int64},1}(),
-        1, 0,
-
-        DomainFac,
 
         Array{Pair{Int128, Ref},1}(),
 
@@ -60,48 +61,55 @@ function DomainData(pids::Array{Int64,1}, units)
         zeros(Int64, length(pids)),
         zeros(Float64, length(pids)),
 
-        0,
-        0,
-
         Array{Int64,1}(),
 
         fill(DomainNode(units), 0),
         fill(DomainNode(units), 0),
 
         Dict{Int64, Int64}(),
+
+        DomainInfoMutable(1, 0, DomainFac, 0, 0),
     )
 end
 
-mutable struct Octree{A, U, Len, Len_1, I, F, POS, VEL, MASS, B} <: AbstractOctree3D{A}
+mutable struct OctreeInfoMutable{I, Ext}
+    extent::Ext
+
+    NumTotal::I
+    NumLocal::I
+    
+    NTreenodes::I
+    nextfreenode::I
+    
+    last::I
+end
+
+struct Octree{A, U, Len, Len_1, I, F, POS, VEL, MASS, B, Ext} <: AbstractOctree3D{A}
     id::Pair{Int64,Int64}
 
     units::U
 
     config::OctreeConfig{I}
-    extent::AbstractExtent3D
 
     data::A
     pids::Array{Int64,1}
 
-    NumTotal::I
-    NumLocal::I
 
     # Domain data
     domain::DomainData{Len, Len_1, I, F, POS, VEL, MASS, B}
 
     # Tree
     treenodes::Array{OctreeNode{I, POS, Len, MASS},1}
-    NTreenodes::I
-    nextfreenode::I
 
     NextNodes::Array{I,1}
     ExtNodes::Array{ExtNode{Len, VEL},1}
-    last::I
 
     sendbuffer::Dict{Int64, Any}
     recvbuffer::Dict{Int64, Any}
 
     timers::Dict{String, UInt64}
+
+    mutable::OctreeInfoMutable{I, Ext}
 end
 
 function Octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) where T<:Union{AbstractPoint, AbstractParticle}
@@ -109,17 +117,14 @@ function Octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::Abst
     uVel = getuVel(units)
     return Octree(
         id, units,
-        config, extent, data, pids, NumTotal, 0,
+        config, data, pids,
 
         DomainData(pids, units),
 
         [OctreeNode(units) for i in 1:config.TreeAllocSection],
-        0,
-        0,
 
         [0 for i in 1:0],
         [ExtNode(uLength, uVel) for i in 1:0],
-        0,
 
         Dict{Int64, Any}(),
         Dict{Int64, Any}(),
@@ -128,8 +133,27 @@ function Octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::Abst
             "tree_domain" => UInt64(0),
             "tree_build"  => UInt64(0),
             "tree_update" => UInt64(0),
+        ),
+
+        OctreeInfoMutable(
+            extent,
+            NumTotal, 0,
+            0, 0, 0,
         )
     )
+end
+
+"""
+    Base.setproperty!(x::Union{DomainData, Octree}, symbol::Symbol, d::AbstractArray)
+
+Modify the memories of array rather than modifing the pointer of array
+"""
+function Base.setproperty!(x::Union{DomainData, Octree}, symbol::Symbol, d::AbstractArray)
+    a = getproperty(x, symbol)
+    if !(a===d)
+        empty!(a)
+        append!(a, d)
+    end
 end
 
 function init_octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)

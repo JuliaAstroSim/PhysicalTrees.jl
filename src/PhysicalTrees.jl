@@ -9,7 +9,7 @@ using StaticArrays
 using BangBang
 using StructArrays
 
-import Base: +, -, show, real, iterate, length, append!, sum
+import Base: +, -, show, real, iterate, length, append!, sum, setproperty!
 import Unitful.Units
 import Distributed: procs
 
@@ -54,7 +54,7 @@ export
     octree,
     rebuild, update_node_len,
     init_octree, split_data,
-    redistribute,
+    #redistribute,
     unregister
 
     abstract type AbstractTree{T} end

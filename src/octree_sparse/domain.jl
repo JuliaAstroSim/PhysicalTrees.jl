@@ -2,16 +2,16 @@
     init_peano(tree::Octree)
 
 1. Count local number of data
-2. Compute `domain.DomainFac`
+2. Compute `domain.mutable.DomainFac`
 3. Compute peano keys of local data
 4. Sort peano keys and store in `domain.peano_keys`
 """
 function init_peano(tree::Octree)
-    tree.NumLocal = length(tree.data)
+    tree.mutable.NumLocal = length(tree.data)
 
-    tree.domain.DomainFac = (1 << tree.config.PeanoBits3D) / tree.extent.SideLength
+    tree.domain.mutable.DomainFac = (1 << tree.config.PeanoBits3D) / tree.mutable.extent.SideLength
 
-    peano = peanokey(tree.data, tree.extent.Corner, tree.domain.DomainFac, tree.config.PeanoBits3D)
+    peano = peanokey(tree.data, tree.mutable.extent.Corner, tree.domain.mutable.DomainFac, tree.config.PeanoBits3D)
     sort!(peano, by = x -> x.first)
     tree.domain.peano_keys = peano
 end
@@ -23,19 +23,19 @@ Allocate `domain.topnodes`, set up the first topnode and count `NTopnodes` from 
 """
 function init_topnode(tree::Octree)
     tree.domain.topnodes = [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection]
-    tree.domain.NTopnodes = 1
-    tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Count = Int128(tree.NumLocal))
+    tree.domain.mutable.NTopnodes = 1
+    tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Count = Int128(tree.mutable.NumLocal))
 end
 
 function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
     topnodes = tree.domain.topnodes
     if topnodes[node].Size >= 8
-        topnodes[node] = setproperties!!(topnodes[node], Daughter = tree.domain.NTopnodes + 1)
+        topnodes[node] = setproperties!!(topnodes[node], Daughter = tree.domain.mutable.NTopnodes + 1)
 
         # Set up daughter topnodes
         daughtersize = div(topnodes[node].Size , 8)
         for i in 0:7
-            if tree.domain.NTopnodes >= length(topnodes) - 8
+            if tree.domain.mutable.NTopnodes >= length(topnodes) - 8
                 if length(topnodes) <= tree.config.MaxTopnode
                     append!(topnodes, [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection])
                 else
@@ -53,7 +53,7 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
                                                            StartKey = newstartkey,
                                                            Pstart = topnodes[node].Pstart)
 
-            tree.domain.NTopnodes += 1
+            tree.domain.mutable.NTopnodes += 1
         end
 
         # Count particles located in daughter topnodes
@@ -72,7 +72,7 @@ function split_topnode_local_kernel(tree::Octree, node::Int64, startkey::Int128)
 
         for i in 0:7
             sub = topnodes[node].Daughter + i
-            if topnodes[sub].Count > tree.NumTotal / (tree.config.TopnodeFactor * length(tree.pids)^2)
+            if topnodes[sub].Count > tree.mutable.NumTotal / (tree.config.TopnodeFactor * length(tree.pids)^2)
                 split_topnode_local_kernel(tree, sub, topnodes[sub].StartKey)
             end
         end
@@ -88,10 +88,10 @@ function count_leaves(tree::Octree)
     topnodes = tree.domain.topnodes
     sc = tree.domain.sc
     empty!(sc)
-    tree.domain.NTopLeaves = 0
-    for i in 1:tree.domain.NTopnodes
+    tree.domain.mutable.NTopLeaves = 0
+    for i in 1:tree.domain.mutable.NTopnodes
         if topnodes[i].Daughter == -1
-            tree.domain.NTopLeaves += 1
+            tree.domain.mutable.NTopLeaves += 1
             push!(sc, SC(topnodes[i].StartKey, topnodes[i].Count))
         end
     end
@@ -113,23 +113,23 @@ end
 
 function reinit_topnode(tree::Octree)
     tree.domain.topnodes = [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection]
-    tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Count = Int128(tree.NumTotal))
-    tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Blocks = Int128(tree.domain.NTopLeaves))
+    tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Count = Int128(tree.mutable.NumTotal))
+    tree.domain.topnodes[1] = setproperties!!(tree.domain.topnodes[1], Blocks = Int128(tree.domain.mutable.NTopLeaves))
     
-    tree.domain.NTopLeaves = 0
+    tree.domain.mutable.NTopLeaves = 0
 
-    tree.domain.NTopnodes = 1
+    tree.domain.mutable.NTopnodes = 1
 end
 
 function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
     topnodes = tree.domain.topnodes
     if topnodes[node].Size >= 8
-        topnodes[node] = setproperties!!(topnodes[node], Daughter = tree.domain.NTopnodes + 1)
+        topnodes[node] = setproperties!!(topnodes[node], Daughter = tree.domain.mutable.NTopnodes + 1)
 
         # Set up daughter topnodes
         daughtersize = div(topnodes[node].Size , 8)
         for i in 0:7
-            if tree.domain.NTopnodes >= length(topnodes) - 8
+            if tree.domain.mutable.NTopnodes >= length(topnodes) - 8
                 if length(topnodes) <= tree.config.MaxTopnode
                     append!(topnodes, [TopNode(bits = tree.config.PeanoBits3D) for i in 1:tree.config.ToptreeAllocSection])
                 else
@@ -146,7 +146,7 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
                                                            StartKey = newstartkey,
                                                            Pstart = topnodes[node].Pstart)
 
-            tree.domain.NTopnodes += 1
+            tree.domain.mutable.NTopnodes += 1
         end
 
         # Count particles located in daughter topnodes
@@ -172,7 +172,7 @@ function split_topnode_kernel(tree::Octree, node::Int64, startkey::Int128)
 
         for i in 0:7
             sub = topnodes[node].Daughter + i
-            if topnodes[sub].Count > tree.NumTotal / (tree.config.TopnodeFactor * length(tree.pids))
+            if topnodes[sub].Count > tree.mutable.NumTotal / (tree.config.TopnodeFactor * length(tree.pids))
                 split_topnode_kernel(tree, sub, topnodes[sub].StartKey)
             end
         end
@@ -186,8 +186,8 @@ Count toptree leaves and store leaf id
 """
 function walk_toptree(tree::Octree, no::Int64)
     if tree.domain.topnodes[no].Daughter == -1
-        tree.domain.NTopLeaves += 1
-        tree.domain.topnodes[no] = setproperties!!(tree.domain.topnodes[no], Leaf = tree.domain.NTopLeaves)
+        tree.domain.mutable.NTopLeaves += 1
+        tree.domain.topnodes[no] = setproperties!!(tree.domain.topnodes[no], Leaf = tree.domain.mutable.NTopLeaves)
     else
         for i in 0:7
             walk_toptree(tree, tree.domain.topnodes[no].Daughter + i)
@@ -203,9 +203,9 @@ end
 
 function sum_cost(tree::Octree)
     topnodes = tree.domain.topnodes
-    tree.domain.DomainWork = zeros(Float64, tree.domain.NTopLeaves)
-    tree.domain.DomainCount = zeros(Int64, tree.domain.NTopLeaves)
-    for i in 1:tree.NumLocal
+    tree.domain.DomainWork = zeros(Float64, tree.domain.mutable.NTopLeaves)
+    tree.domain.DomainCount = zeros(Int64, tree.domain.mutable.NTopLeaves)
+    for i in 1:tree.mutable.NumLocal
         no = 1
         while topnodes[no].Daughter >= 0
             no = trunc(Int64, topnodes[no].Daughter + (tree.domain.peano_keys[i].first - topnodes[no].StartKey) / (topnodes[no].Size / 8))
@@ -304,12 +304,12 @@ function find_split(tree::Octree)
     tree.domain.list_load = zeros(Int64, npids)
     tree.domain.list_work = zeros(Float64, npids)
 
-    tree.domain.DomainTask = zeros(Int64, tree.domain.NTopLeaves)
+    tree.domain.DomainTask = zeros(Int64, tree.domain.mutable.NTopLeaves)
 
-    find_split_kernel(tree, 1, npids, 1, tree.domain.NTopLeaves)
+    find_split_kernel(tree, 1, npids, 1, tree.domain.mutable.NTopLeaves)
 
-    tree.domain.DomainMyStart = tree.domain.DomainStartList[findfirst(x->x==myid(), tree.pids)]
-    tree.domain.DomainMyEnd = tree.domain.DomainEndList[findfirst(x->x==myid(), tree.pids)]
+    tree.domain.mutable.DomainMyStart = tree.domain.DomainStartList[findfirst(x->x==myid(), tree.pids)]
+    tree.domain.mutable.DomainMyEnd = tree.domain.DomainEndList[findfirst(x->x==myid(), tree.pids)]
 end
 
 function shift_split_kernel(tree::Octree)
@@ -342,7 +342,7 @@ function fill_domain_buffer(tree::Octree)
     newdata = tree.data[1:0]
     newpeano = empty(tree.domain.peano_keys)
 
-    for i in 1:tree.NumLocal
+    for i in 1:tree.mutable.NumLocal
         no = 1
         while topnodes[no].Daughter >= 0
             no = trunc(Int64, topnodes[no].Daughter + (tree.domain.peano_keys[i].first - topnodes[no].StartKey) / (topnodes[no].Size / 8))
@@ -371,7 +371,7 @@ function clear_domain_buffer(tree::Octree)
         push!(data, d.second)
     end
 
-    tree.NumLocal = length(data)
+    tree.mutable.NumLocal = length(data)
 
     empty!(tree.sendbuffer)
     empty!(tree.recvbuffer)
@@ -385,10 +385,10 @@ function split_domain(tree::Octree)
     # Split local topnodes according to work load, collect block info
     bcast(tree, split_topnode_local)
 
-    NTopnodes = sum(tree, :domain, :NTopnodes)
-    bcast(tree, :domain, :NTopnodes, NTopnodes)
-    NTopLeaves = sum(tree, :domain, :NTopLeaves)
-    bcast(tree, :domain, :NTopLeaves, NTopLeaves)
+    NTopnodes = sum(tree, :domain, :mutable, :NTopnodes)
+    bcast(tree, :domain, :mutable, :NTopnodes, NTopnodes)
+    NTopLeaves = sum(tree, :domain, :mutable, :NTopLeaves)
+    bcast(tree, :domain, :mutable, :NTopLeaves, NTopLeaves)
 
     tree.domain.sc = reduce(vcat, gather(tree, :domain, :sc))
     key_sort_bcast(tree)
@@ -402,9 +402,9 @@ function split_domain(tree::Octree)
     else
         sample_id = tree.pids[2]
     end
-    tree.domain.DomainFac = getfrom(tree, sample_id, :domain, :DomainFac)
-    tree.domain.NTopnodes = getfrom(tree, sample_id, :domain, :NTopnodes)
-    tree.domain.NTopLeaves = getfrom(tree, sample_id, :domain, :NTopLeaves)
+    tree.domain.mutable.DomainFac = getfrom(tree, sample_id, :domain, :mutable, :DomainFac)
+    tree.domain.mutable.NTopnodes = getfrom(tree, sample_id, :domain, :mutable, :NTopnodes)
+    tree.domain.mutable.NTopLeaves = getfrom(tree, sample_id, :domain, :mutable, :NTopLeaves)
 
     # Sum work load, now we are ready to split computation domain
     bcast(tree, sum_cost)

@@ -4,15 +4,15 @@ function summary(tree::AbstractTree)
     return string("\nTree defined on worker ", tree.id.first,
              ":\n    Distributed on workers: ", tree.pids,
              "\n                     units: ", tree.units,
-             "\n        Number of topnodes: ", tree.domain.NTopnodes,
-             "\n       Number of topleaves: ", tree.domain.NTopLeaves,
-             "\n             Domain factor: ", tree.domain.DomainFac,
+             "\n        Number of topnodes: ", tree.domain.mutable.NTopnodes,
+             "\n       Number of topleaves: ", tree.domain.mutable.NTopLeaves,
+             "\n             Domain factor: ", tree.domain.mutable.DomainFac,
              "\n         Domain start list: ", tree.domain.DomainStartList,
              "\n           Domain end list: ", tree.domain.DomainEndList,
              "\n                 Load list: ", tree.domain.list_load,
              "\n                 Work list: ", tree.domain.list_work,
-             "\n      Number of tree nodes: ", gather(tree, :NTreenodes),
-             "\n    ", tree.extent,
+             "\n      Number of tree nodes: ", gather(tree, :mutable, :NTreenodes),
+             "\n    ", tree.mutable.extent,
              "\n", datainfo(tree),
     )
 end
@@ -55,9 +55,9 @@ function datainfo(tree::AbstractTree)
 
     return string(
         "\n  -------------------------- Data info --------------------------",
-        "\n                         total: ", tree.NumTotal,
+        "\n                         total: ", tree.mutable.NumTotal,
         #"\n                          type: ", typeof(tree.data),
-        "\n                          cuts: ", gather(tree, :NumLocal),
+        "\n                          cuts: ", gather(tree, :mutable, :NumLocal),
         "\n              last communicate: ", local_to_go_string,
     )
 end

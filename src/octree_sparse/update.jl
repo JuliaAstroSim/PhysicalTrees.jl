@@ -19,14 +19,14 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
     if no <= MaxTreenode # internal node
         suns = deepcopy(treenodes[no].DaughterID)
 
-        if tree.last > 0
-            if tree.last > MaxTreenode  # pseudo-particle
-                NextNodes[tree.last - MaxTreenode] = no
+        if tree.mutable.last > 0
+            if tree.mutable.last > MaxTreenode  # pseudo-particle
+                NextNodes[tree.mutable.last - MaxTreenode] = no
             else
-                treenodes[tree.last] = setproperties!!(treenodes[tree.last], NextNode = no)
+                treenodes[tree.mutable.last] = setproperties!!(treenodes[tree.mutable.last], NextNode = no)
             end
         end
-        tree.last = no
+        tree.mutable.last = no
 
         mass = ZeroValues.mass
         s = ZeroValues.pos
@@ -92,14 +92,14 @@ function update_treenodes_kernel(tree::AbstractTree, no::Int64, sib::Int64, fath
         
         ExtNodes[no] = setproperties!!(ExtNodes[no], vs = vs, hmax = hmax)
     else # pseudo particle
-        if tree.last > 0
-            if tree.last > MaxTreenode  # pseudo-particle
-                NextNodes[tree.last - MaxTreenode] = no
+        if tree.mutable.last > 0
+            if tree.mutable.last > MaxTreenode  # pseudo-particle
+                NextNodes[tree.mutable.last - MaxTreenode] = no
             else
-                treenodes[tree.last] = setproperties!!(treenodes[tree.last], NextNode = no)
+                treenodes[tree.mutable.last] = setproperties!!(treenodes[tree.mutable.last], NextNode = no)
             end
         end
-        tree.last = no
+        tree.mutable.last = no
     end
 end
 
@@ -109,10 +109,10 @@ end
 Close the last `NextNode` indexing
 """
 function finish_last(tree::AbstractTree)
-    if tree.last > tree.config.MaxTreenode  # pseudo-particle
-        tree.NextNodes[tree.last - tree.config.MaxTreenode] = 0
+    if tree.mutable.last > tree.config.MaxTreenode  # pseudo-particle
+        tree.NextNodes[tree.mutable.last - tree.config.MaxTreenode] = 0
     else # Tree node
-        tree.treenodes[tree.last] = setproperties!!(tree.treenodes[tree.last], NextNode = 0)
+        tree.treenodes[tree.mutable.last] = setproperties!!(tree.treenodes[tree.mutable.last], NextNode = 0)
     end
 end
 
@@ -127,7 +127,7 @@ function update_local_data(tree::AbstractTree)
     tree.ExtNodes = [ExtNode(uLength, uVel) for i in 1:tree.config.MaxTreenode]
     tree.NextNodes = zeros(Int64, tree.config.MaxTopnode)
 
-    tree.last = 0
+    tree.mutable.last = 0
     update_treenodes_kernel(tree, 1, 0, 0)
     finish_last(tree)
 end
@@ -138,14 +138,14 @@ function fill_pseudo_buffer(tree::AbstractTree)
 
     empty!(tree.domain.MomentsToSend)
 
-    for i in tree.domain.DomainMyStart : tree.domain.DomainMyEnd
+    for i in tree.domain.mutable.DomainMyStart : tree.domain.mutable.DomainMyEnd
         no = tree.domain.DomainNodeIndex[i]
         DomainMoment[i] = setproperties!!(DomainMoment[i], Mass = treenodes[no].Mass,
                                                            MassCenter = treenodes[no].MassCenter,
                                                            Vel = tree.ExtNodes[no].vs)
     end
 
-    tree.domain.MomentsToSend = DomainMoment[tree.domain.DomainMyStart:tree.domain.DomainMyEnd]
+    tree.domain.MomentsToSend = DomainMoment[tree.domain.mutable.DomainMyStart:tree.domain.mutable.DomainMyEnd]
 end
 
 """
@@ -182,8 +182,8 @@ function update_pseudo_data(tree::AbstractTree)
     ExtNodes = tree.ExtNodes
     DomainMoment = tree.domain.DomainMoment
 
-    for i in 1:tree.domain.NTopLeaves
-        if i < tree.domain.DomainMyStart || i > tree.domain.DomainMyEnd
+    for i in 1:tree.domain.mutable.NTopLeaves
+        if i < tree.domain.mutable.DomainMyStart || i > tree.domain.mutable.DomainMyEnd
             no = tree.domain.DomainNodeIndex[i]
 
             sold = treenodes[no].MassCenter
@@ -227,7 +227,7 @@ function flag_local_treenodes(tree::AbstractTree)
     end
 
     # mark top-level nodes that contain local particles
-    for i in tree.domain.DomainMyStart:tree.domain.DomainMyEnd
+    for i in tree.domain.mutable.DomainMyStart:tree.domain.mutable.DomainMyEnd
         no = tree.domain.DomainNodeIndex[i]
 
         while no > 0
