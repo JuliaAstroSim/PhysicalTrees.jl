@@ -156,6 +156,14 @@ function Base.setproperty!(x::Union{DomainData, Octree}, symbol::Symbol, d::Abst
     end
 end
 
+function Base.setproperty!(x::Union{DomainData, Octree}, symbol::Symbol, d::Dict)
+    a = getproperty(x, symbol)
+    if !(a===d)
+        empty!(a)
+        merge!(a, d)
+    end
+end
+
 function init_octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}, ::Physical3D)
     if isnothing(units)
         error("Please define units!")
