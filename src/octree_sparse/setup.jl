@@ -24,35 +24,17 @@ function octree(data,
                config = OctreeConfig(length(data)),
                pids = workers(),)
     tree = init_octree(data, units, config, pids)
-
-    begin_timer(tree, "tree_domain")
     split_domain(tree)
-    end_timer(tree, "tree_domain")
-    
-    begin_timer(tree, "tree_build")
     build(tree)
-    end_timer(tree, "tree_build")
-    
-    begin_timer(tree, "tree_update")
     update(tree)
-    end_timer(tree, "tree_update")
-
     return tree
 end
 
 function rebuild(tree::Octree)
-    begin_timer(tree, "tree_domain")
     global_extent(tree)
     split_domain(tree)
-    end_timer(tree, "tree_domain")
-    
-    begin_timer(tree, "tree_build")
     build(tree)
-    end_timer(tree, "tree_build")
-    
-    begin_timer(tree, "tree_update")
     update(tree)
-    end_timer(tree, "tree_update")
     return tree
 end
 

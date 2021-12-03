@@ -107,8 +107,6 @@ struct Octree{A, U, Len, Len_1, I, F, POS, VEL, MASS, B, Ext} <: AbstractOctree3
     sendbuffer::Dict{Int64, Any}
     recvbuffer::Dict{Int64, Any}
 
-    timers::Dict{String, UInt64}
-
     mutable::OctreeInfoMutable{I, Ext}
 end
 
@@ -128,12 +126,6 @@ function Octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::Abst
 
         Dict{Int64, Any}(),
         Dict{Int64, Any}(),
-
-        Dict(
-            "tree_domain" => UInt64(0),
-            "tree_build"  => UInt64(0),
-            "tree_update" => UInt64(0),
-        ),
 
         OctreeInfoMutable(
             extent,
@@ -156,6 +148,11 @@ function Base.setproperty!(x::Union{DomainData, Octree}, symbol::Symbol, d::Abst
     end
 end
 
+"""
+    Base.setproperty!(x::Union{DomainData, Octree}, symbol::Symbol, d::Dict)
+
+Modify the memories of Dict rather than modifing the pointer of Dict
+"""
 function Base.setproperty!(x::Union{DomainData, Octree}, symbol::Symbol, d::Dict)
     a = getproperty(x, symbol)
     if !(a===d)
