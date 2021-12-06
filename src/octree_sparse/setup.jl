@@ -23,7 +23,7 @@ function octree(data,
                units = uAstro,
                config = OctreeConfig(length(data)),
                pids = workers(),)
-    tree = init_octree(data, units, config, pids)
+    tree = init_octree(StructArray(data), units, config, pids)
     split_domain(tree)
     build(tree)
     update(tree)
