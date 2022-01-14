@@ -8,8 +8,8 @@ function init_octree(data, units, config::OctreeConfig, pids::Array{Int64,1})
 
     # Find the extent and enlarge a little to make sure that all particles fall inside the domain
     e = extent(data)
-    SideLength = e.SideLength * config.ExtentMargin
-    e = setproperties!!(e, SideLength = SideLength, Corner = e.Center - PVector(SideLength, SideLength, SideLength) * 0.5)
+    SideLength = convert(eltype(e.SideLength), e.SideLength * config.ExtentMargin)
+    e = setproperties!!(e, SideLength = SideLength, Corner = e.Center - PVector(SideLength, SideLength, SideLength) / 2)
 
     type = datadimension(data) # to avoid empty arrays
     NumTotal = length(data)
