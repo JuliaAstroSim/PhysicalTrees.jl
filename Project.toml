@@ -3,7 +3,7 @@ uuid = "dc5d4990-50a5-4af2-bdaa-6f78dc9b9fb2"
 license = "GPLv3"
 authors = ["islent <leoislent@gmail.com>"]
 repository = "https://github.com/JuliaAstroSim/PhysicalTrees.jl"
-version = "0.1.2"
+version = "0.1.3"
 
 [deps]
 BangBang = "198e06fe-97b7-11e9-32a5-e1d131e6ad66"
