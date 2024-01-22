@@ -2,6 +2,7 @@ module PhysicalTrees
 
 __precompile__(true)
 
+using PrecompileTools
 using Reexport
 using Unitful, UnitfulAstro
 using Distributed
@@ -96,4 +97,6 @@ export
 
     include("PrettyPrinting.jl")
     include("Analyse.jl")
+
+    include("precompile.jl")
 end

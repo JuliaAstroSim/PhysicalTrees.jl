@@ -110,7 +110,7 @@ struct Octree{A, U, Len, Len_1, I, F, POS, VEL, MASS, B, Ext} <: AbstractOctree3
     mutable::OctreeInfoMutable{I, Ext}
 end
 
-function Octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1}) where T<:Union{AbstractPoint, AbstractParticle}
+function Octree(id::Pair{Int64,Int64}, units, config::OctreeConfig, extent::AbstractExtent3D, data, NumTotal::Int64, pids::Array{Int64,1})
     uLength = getuLength(units)
     uVel = getuVel(units)
     return Octree(
